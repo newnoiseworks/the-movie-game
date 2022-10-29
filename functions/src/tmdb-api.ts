@@ -13,8 +13,13 @@ function getMovieUrlById (mid: number, withCredits?: boolean) {
   return `${tmdbApi}/3/movie/${mid}?api_key=${apiKey}&append_to_response=videos${withCredits ? ',credits' : ''},images`
 }
 
+function getPersonUrlById (pid: number) {
+  return `${tmdbApi}/3/person/${pid}?api_key=${apiKey}&append_to_response=videos,images`
+}
+
 export {
   getMovieSearchUrl,
   getPersonSearchUrl,
   getMovieUrlById,
+  getPersonUrlById
 }
