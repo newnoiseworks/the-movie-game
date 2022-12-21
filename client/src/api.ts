@@ -1,8 +1,10 @@
 import axios from 'axios'
 
-async function createGame(uuid: string) {
+import { auth } from './firebase'
+
+async function createGame() {
   return axios
-    .get(`${process.env.REACT_APP_FUNCTIONS_URL}/createGame?uuid=${uuid}`)
+    .get(`${process.env.REACT_APP_FUNCTIONS_URL}/createGame?uuid=${auth.currentUser?.uid!}`)
     .then((response) => response.data)
 }
 

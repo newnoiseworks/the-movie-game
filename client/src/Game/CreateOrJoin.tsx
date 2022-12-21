@@ -2,28 +2,16 @@ import React from 'react'
 import { Button, Container, Link, TextField, Typography } from '@mui/material'
 import { useNavigate } from 'react-router-dom'
 
-import { anonymousSignIn, auth } from '../firebase'
 import { createGame } from '../api'
 
 const CreateOrJoin: React.FC = () => {
-  const [isSignedIn, setIsSignedIn] = React.useState(!!auth.currentUser)
   const navigate = useNavigate()
-
-  if (!auth.currentUser) {
-    anonymousSignIn(() => {
-      setIsSignedIn(true)
-    })
-  }
-
-  if (isSignedIn === false) {
-    return <></>
-  }
 
   async function createGameAndChangePage() {
     let gameId
 
     try {
-      gameId = await createGame(auth.currentUser?.uid!)
+      gameId = await createGame()
     } catch(err) {
       console.error("Could not create new game ID via API.")
       throw err
@@ -43,7 +31,7 @@ const CreateOrJoin: React.FC = () => {
           mb: 2
         }}
       >The Movie Game</Typography>
-      <Typography>
+      <Typography component="div">
         <Link onClick={() => createGameAndChangePage()}>Create a game</Link> 
         {` `}
         <label htmlFor="game-code">
