@@ -9,6 +9,7 @@
     "start": "npm run shell",
     "deploy": "firebase deploy --only functions",
     "logs": "firebase functions:log",
+    "test": "jest",
     "test:watch": "jest --watch"
   },
   "engines": {
@@ -18,6 +19,7 @@
   "dependencies": {
     "@types/jest": "^29.2.0",
     "axios": "^1.1.3",
+    "cors": "^2.8.5",
     "dotenv": "^16.0.3",
     "firebase-admin": "^10.0.2",
     "firebase-functions": "^3.18.0",

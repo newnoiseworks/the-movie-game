@@ -64,3 +64,5 @@ node_modules/
 
 # dotenv environment variables file
 .env
+
+functions/the-movie-game-fbase-admin-sdk.json
