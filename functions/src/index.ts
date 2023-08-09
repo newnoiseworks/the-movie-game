@@ -1,12 +1,10 @@
 import * as functions from "firebase-functions";
 import * as admin from "firebase-admin"
 
-const axios = require('axios')
+var axios = require('axios')
 const cors = require('cors')({ origin: true })
 
 var serviceAccount = require("../the-movie-game-fbase-admin-sdk.json")
-
-
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
@@ -19,6 +17,8 @@ import {
   getMovieUrlById,
   getPersonUrlById,
 } from "./tmdb-api"
+
+import Game from "./game";
 
 export const movieSearch = functions.https.onRequest(async (request, response) => {
   let searchResponse
@@ -68,14 +68,81 @@ export const getPerson = functions.https.onRequest(async (request, response) => 
   response.send(personResponse.data)
 })
 
-// TODO: This probably shouldn't be publicly exposed but done privately w/n a
-// game "choose" method call, which this could be converted to and would update 
-// the DB accordingly. No cheating / easy buckets / poor movie game opsec.
-export const isPersonInMovie = functions.https.onRequest(async (request, response) => {
+
+// Create game call
+export const createGame = functions.https.onRequest(async (request, response) => {
+  cors(request, response, async () => {
+    const game: Game = new Game(admin.database())
+
+    const gameKey = await game.create({
+      uuid: (request.query["uuid"] || "") as string,
+      name: (request.query["name"] || "") as string,
+    })
+
+    response.send(gameKey)
+  })
+})
+
+// Join game call
+export const joinGame = functions.https.onRequest(async (request, response) => {
+  const db = admin.database()
+  const gameId = (request.query["gid"] || "") as string
+
+  const game = await new Game(db).get(gameId)
+
+  try {
+    await game.join({
+      uuid: (request.query["uuid"] || "") as string,
+      name: (request.query["name"] || "") as string,
+    })
+
+    response.send()
+  } catch(err) {
+    throw err
+  }
+})
+
+
+// make sure player is in game and current person
+export const playerGameChoice = functions.https.onRequest(async (request, response) => {
+  const db = admin.database()
+  const movieId = parseInt(request.query["mid"] as string)
+  const personId = parseInt(request.query["pid"] as string)
+
+  // TODO: can we get the user's UUID from the firebase
+  // admin as opposed to the request to prevent spoofing?
+  const uuid = parseInt(request.query["uuid"] as string)
+
+  const isPersonInMovieBool = await isPersonInMovie(movieId, personId)
+
+  const gameId = request.query["gid"]
+  const gameRef = db.ref(`games/${gameId}`)
+  gameRef.once("value", (snapshot) => {
+    var game = snapshot.val()
+
+    // TODO: confirm the user in the request is the current user in the game doc
+
+    var player = game.players.find((gu: any) => gu.uuid === uuid)
+
+    if (isPersonInMovieBool === false) {
+      player.score = player.score + 1
+    }
+
+    game.currentPlayer = game.currentPlayer + 1
+
+    if (game.currentPlayer === game.players.length) {
+      game.currentPlayer = 0
+    }
+
+    gameRef.set(game, () => response.send(JSON.stringify(game)))
+  })
+})
+
+async function isPersonInMovie (movieId: number, personId: number) {
   let movieResponse
 
   try {
-    movieResponse = await axios.get(getMovieUrlById(parseInt(request.query["mid"] as string), true))
+    movieResponse = await axios.get(getMovieUrlById(movieId), true)
   } catch(err) {
     throw err
   }
@@ -83,49 +150,13 @@ export const isPersonInMovie = functions.https.onRequest(async (request, respons
   const isPersonInMovieBool: boolean = (
     movieResponse.data.credits.cast as any[]
   ).reduce(
-    (previous, current) => 
-      previous || current.id == parseInt(request.query["pid"] as string), 
+    (previous, current) =>
+      previous || current.id == personId,
     false
   )
 
-  response.send(isPersonInMovieBool.toString())
-})
-
-
-// TODO: Create game call
-// // see if you can limit readability to who is joined but also, fuck it, v2 -- who cares
-export const createGame = functions.https.onRequest((request, response) => {
-  cors(request, response, () => {
-    console.log(process.env.FBASE_REALTIME_DB_URL)
-    const db = admin.database()
-    const gamesRef = db.ref("games")
-
-    const gameRef = gamesRef.push({
-      users: [request.query["uuid"]]
-    })
-
-    gameRef.once("value", function(snapshot) {
-      response.send(gameRef.key)
-    })
-  })
-})
-
-// TODO: Join game call
-export const joinGame = functions.https.onRequest(async (request, _response) => {
-  const db = admin.database()
-  const gameId = request.query["uuid"]
-  const gameRef = db.ref(`games/${gameId}`)
-
-  gameRef.on('value', (snapshot) => {
-    console.log(snapshot.val())
-  }, (errorObject) => {
-    console.log('The read failed: ' + errorObject.name)
-  })
-})
-
-
-// TODO: Game choice call
-// make sure player is in game and current person
+  return isPersonInMovieBool
+}
 
 
 // TODO: Figure out how best to mitigate for leaving -- API call? Some Firebase signal? etc
