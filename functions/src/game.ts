@@ -70,10 +70,10 @@ export default class Game {
     }
   }
 
-  async playerReady(uuid: string) {
+  async playerReady(uuid: string, ready: boolean = true) {
     const playerKey = Object.keys(this.players).find((key) => this.players[key].uuid === uuid)
 
-    await this.db.ref(`games/${this.gid}/players/${playerKey}`).update({ ready: true })
+    await this.db.ref(`games/${this.gid}/players/${playerKey}`).update({ ready })
   }
 
   playerMove(

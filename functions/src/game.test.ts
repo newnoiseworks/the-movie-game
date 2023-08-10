@@ -116,4 +116,17 @@ describe("Game#playerReady", () => {
     expect(playerList[Object.keys(playerList).find((key) => playerList[key].uuid === uuid)!].uuid).toEqual(uuid)
     expect(firstPlayer.ready).toBeTruthy()
   })
+  test("sets a players' ready flag to false when true", async () => {
+    const game = new Game(db)
+    const gameKey = await game.create({ uuid, name })
+
+    await game.playerReady(uuid)
+    await game.playerReady(uuid, false)
+
+    const playerList = (await db.ref(`games/${gameKey}/players`).once('value')).val()
+    const firstPlayer = playerList[Object.keys(playerList).find((key) => playerList[key].uuid === uuid)!]
+
+    expect(playerList[Object.keys(playerList).find((key) => playerList[key].uuid === uuid)!].uuid).toEqual(uuid)
+    expect(firstPlayer.ready).toBeFalsy()
+  })
 })
