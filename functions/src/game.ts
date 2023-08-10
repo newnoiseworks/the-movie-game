@@ -32,16 +32,15 @@ export default class Game {
 
     this.gid = gameRef.key as string
 
-    const gameVal = (await gameRef.once("value")).val()
+    await gameRef.once("value")
 
     const gamesPlayerRef = this.db.ref(`games/${this.gid}/players`)
 
     gamesPlayerRef.push(firstPlayer)
 
-    const firstPlayerRef = await gamesPlayerRef.once("value")
+    await gamesPlayerRef.once("value")
 
-    this.players[firstPlayerRef.key as string] = firstPlayer
-    this.createdOn = gameVal.createdOn
+    await this.get(this.gid)
 
     return gameRef.key
   }
@@ -69,6 +68,12 @@ export default class Game {
     } catch(err) {
       throw err
     }
+  }
+
+  async playerReady(uuid: string) {
+    const playerKey = Object.keys(this.players).find((key) => this.players[key].uuid === uuid)
+
+    await this.db.ref(`games/${this.gid}/players/${playerKey}`).update({ ready: true })
   }
 
   playerMove(

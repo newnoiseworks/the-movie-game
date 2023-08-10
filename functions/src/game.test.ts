@@ -101,3 +101,19 @@ describe("Game#join", () => {
   // test("cannot join game where all users are ready")
   // test("cannot join same game twice")
 })
+
+describe("Game#playerReady", () => {
+  test("sets a player's ready flag to true when false", async () => {
+    const game = new Game(db)
+    const gameKey = await game.create({ uuid, name })
+
+    await game.playerReady(uuid)
+
+    const playerList = (await db.ref(`games/${gameKey}/players`).once('value')).val()
+
+    const firstPlayer = playerList[Object.keys(playerList).find((key) => playerList[key].uuid === uuid)!]
+
+    expect(playerList[Object.keys(playerList).find((key) => playerList[key].uuid === uuid)!].uuid).toEqual(uuid)
+    expect(firstPlayer.ready).toBeTruthy()
+  })
+})
