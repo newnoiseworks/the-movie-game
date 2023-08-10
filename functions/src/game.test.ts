@@ -131,7 +131,7 @@ describe("Game#join", () => {
 })
 
 describe("Game#playerReady", () => {
-  test("sets a player's ready flag to true when false", async () => {
+  test("sets a player's ready flag to true", async () => {
     const game = new Game(db)
     const gameKey = await game.create({ uuid, name })
 
@@ -145,7 +145,7 @@ describe("Game#playerReady", () => {
     expect(firstPlayer.ready).toBeTruthy()
   })
 
-  test("sets a players' ready flag to false when true", async () => {
+  test("sets a players' ready flag to false", async () => {
     const game = new Game(db)
     const gameKey = await game.create({ uuid, name })
 
