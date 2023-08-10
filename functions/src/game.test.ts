@@ -83,16 +83,17 @@ describe("Game#join", () => {
 
     expect(Object.keys(updatedPlayerList).length).toEqual(1)
 
-    await game.join({
-      uuid: uuid2, name: name2
-    })
+    await game.join({ uuid: uuid2, name: name2 })
 
     updatedPlayerList = (await db.ref(`games/${gameKey}/players`).once('value')).val()
 
+    const firstPlayer: Player = updatedPlayerList[Object.keys(updatedPlayerList)[0]]
     const secondPlayer: Player = updatedPlayerList[Object.keys(updatedPlayerList)[1]]
 
     expect(Object.keys(game.players).length).toEqual(2)
     expect(Object.keys(updatedPlayerList).length).toEqual(2)
+    expect(firstPlayer.uuid).toEqual(uuid)
+    expect(firstPlayer.name).toEqual(name)
     expect(secondPlayer.uuid).toEqual(uuid2)
     expect(secondPlayer.name).toEqual(name2)
   })
