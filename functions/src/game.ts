@@ -1,5 +1,7 @@
 import * as admin from "firebase-admin"
 
+const MAX_SCORE = "MOVIE".length
+
 export interface Player {
   uuid: string
   name: string
@@ -58,20 +60,7 @@ export default class Game {
   }
 
   async join(newPlayer: Player) {
-    let allPlayersReady = true
-
-    for (var playerKey in this.players) {
-      const player = this.players[playerKey]
-      if (player.uuid === newPlayer.uuid) {
-        return false
-      }
-
-      if (!player.ready) {
-        allPlayersReady = false
-      }
-    }
-
-    if (allPlayersReady) {
+    if (!this.canPlayerJoin(newPlayer)) {
       return false
     }
 
@@ -87,6 +76,24 @@ export default class Game {
     } catch(err) {
       throw err
     }
+  }
+
+  canPlayerJoin(newPlayer: Player) {
+    let allPlayersReady = true
+
+    for (var playerKey in this.players) {
+      const player = this.players[playerKey]
+
+      if (player.uuid === newPlayer.uuid) {
+        return false
+      }
+
+      if (!player.ready) {
+        allPlayersReady = false
+      }
+    }
+
+    return !allPlayersReady
   }
 
   async playerReady(uuid: string, ready: boolean = true) {
