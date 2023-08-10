@@ -58,28 +58,49 @@ export default class Game {
   }
 
   async join(newPlayer: Player) {
+    let allPlayersReady = true
+
+    for (var playerKey in this.players) {
+      const player = this.players[playerKey]
+      if (player.uuid === newPlayer.uuid) {
+        return false
+      }
+
+      if (!player.ready) {
+        allPlayersReady = false
+      }
+    }
+
+    if (allPlayersReady) {
+      return false
+    }
+
     newPlayer.score = 0
     const gamePlayersRef = this.db.ref(`games/${this.gid}/players`)
 
     try {
       await gamePlayersRef.push(newPlayer).once("value")
 
-      return this.get(this.gid!)
+      this.players = (await gamePlayersRef.once('value')).val()
+
+      return true
     } catch(err) {
       throw err
     }
   }
 
   async playerReady(uuid: string, ready: boolean = true) {
-    const playerKey = Object.keys(this.players).find((key) => this.players[key].uuid === uuid)
+    const playerKey = Object.keys(this.players).find((key) => this.players[key].uuid === uuid)!
 
     await this.db.ref(`games/${this.gid}/players/${playerKey}`).update({ ready })
+
+    this.players[playerKey].ready = ready
   }
 
-  playerMove(
-    isCorrect: boolean,
-    uuid: string
-  ) {
-  }
+  // playerMove(
+  //   isCorrect: boolean,
+  //   uuid: string
+  // ) {
+  // }
 }
 

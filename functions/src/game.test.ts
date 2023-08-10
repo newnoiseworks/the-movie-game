@@ -16,6 +16,8 @@ const uuid = "test-uuid-1234"
 const name = "test-name"
 const uuid2 = uuid + "_2"
 const name2 = name + "_2"
+const uuid3 = uuid + "_3"
+const name3 = name + "_3"
 
 afterAll(async () => {
   await db.ref("games").set({})
@@ -98,8 +100,34 @@ describe("Game#join", () => {
     expect(secondPlayer.name).toEqual(name2)
   })
 
-  // test("cannot join game where all users are ready")
-  // test("cannot join same game twice")
+  test("cannot join game where all users are ready", async () => {
+    const game = new Game(db)
+    const gameKey = await game.create({ uuid, name })
+
+    const didPlayerTwoJoin = await game.join({ uuid: uuid2, name: name2 })
+    expect(didPlayerTwoJoin).toBeTruthy()
+
+    await game.playerReady(uuid)
+    await game.playerReady(uuid2)
+
+    const didPlayerThreeJoin = await game.join({ uuid: uuid3, name: name3 })
+    expect(didPlayerThreeJoin).toBeFalsy()
+
+    const gameRefFromServer = (await db.ref(`games/${gameKey}`).once('value')).val()
+
+    expect(Object.keys(gameRefFromServer.players).length).toEqual(2)
+  })
+
+  test("cannot join same game twice", async () => {
+    const game = new Game(db)
+    await game.create({ uuid, name })
+
+    const didPlayerTwoJoin = await game.join({ uuid: uuid2, name: name2 })
+    expect(didPlayerTwoJoin).toBeTruthy()
+
+    const didPlayerTwoJoinTwice = await game.join({ uuid: uuid2, name: name2 })
+    expect(didPlayerTwoJoinTwice).toBeFalsy()
+  })
 })
 
 describe("Game#playerReady", () => {
@@ -116,6 +144,7 @@ describe("Game#playerReady", () => {
     expect(playerList[Object.keys(playerList).find((key) => playerList[key].uuid === uuid)!].uuid).toEqual(uuid)
     expect(firstPlayer.ready).toBeTruthy()
   })
+
   test("sets a players' ready flag to false when true", async () => {
     const game = new Game(db)
     const gameKey = await game.create({ uuid, name })
