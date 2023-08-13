@@ -1,4 +1,4 @@
-import Game, { Player } from './game'
+import Game, { MAX_SCORE, Player } from './game'
 
 import * as admin from "firebase-admin"
 
@@ -218,6 +218,42 @@ describe("Game#playerMove", () => {
     expect(firstCurrentPlayer).not.toBe(secondCurrentPlayer)
     expect(secondCurrentPlayer).toBe(uuid2)
   })
-  // test("if player has already hit max score, don't do anything")
+
+  test("if player has already hit max score, don't do anything", async () => {
+    const game = new Game(db)
+    const gameKey = await game.create({ uuid, name })
+
+    await game.join({ uuid: uuid2, name: name2 })
+    await game.join({ uuid: uuid3, name: name3 })
+
+    await game.playerReady(uuid, true)
+    await game.playerReady(uuid2, true)
+    await game.playerReady(uuid3, true)
+
+    const playerKey = Object.keys(game.players).find((k) => game.players[k].uuid === uuid)
+
+    await db.ref(`games/${gameKey}/players/${playerKey}/score`).set(MAX_SCORE)
+    await db.ref(`games/${gameKey}/currentPlayer`).set(game.players[Object.keys(game.players)[1]].uuid)
+
+    await game.get(game.gid!)
+
+    let gameObj = (await db.ref(`games/${gameKey}`).once("value")).val()
+    let firstUser = gameObj.players[Object.keys(gameObj.players)[0]]!
+    const firstCurrentPlayer = gameObj.currentPlayer
+
+    expect(firstUser.score).toEqual(MAX_SCORE)
+    expect(firstCurrentPlayer).toBe(uuid2)
+
+    const didPlayerMove = await game.playerMove(uuid, false)
+
+    gameObj = (await db.ref(`games/${gameKey}`).once("value")).val()
+    firstUser = gameObj.players[Object.keys(gameObj.players)[0]]!
+    const secondCurrentPlayer = gameObj.currentPlayer
+
+    expect(firstUser.score).toEqual(MAX_SCORE)
+    expect(didPlayerMove).toBeFalsy()
+    expect(firstCurrentPlayer).toBe(secondCurrentPlayer)
+    expect(secondCurrentPlayer).toBe(uuid2)
+  })
 })
 

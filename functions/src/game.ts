@@ -1,6 +1,6 @@
 import * as admin from "firebase-admin"
 
-// const MAX_SCORE = "MOVIE".length
+export const MAX_SCORE = "MOVIE".length
 
 export interface Player {
   uuid: string
@@ -111,6 +111,10 @@ export default class Game {
     const playerKey = Object.keys(this.players).find((key) => this.players[key].uuid === uuid)!
     const player = this.players[playerKey]
 
+    if (player.score === MAX_SCORE) {
+      return false
+    }
+
     if (!isCorrect) {
       await this.db.ref(`games/${this.gid}/players/${playerKey}/score`).set((player.score || 0) + 1)
     }
@@ -121,6 +125,8 @@ export default class Game {
     ]].uuid
 
     await this.db.ref(`games/${this.gid}/currentPlayer`).set(nextPlayerUuid)
+
+    return true
   }
 }
 
