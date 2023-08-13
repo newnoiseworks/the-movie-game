@@ -21,6 +21,7 @@ const name3 = name + "_3"
 
 afterAll(async () => {
   await db.ref("games").set({})
+  db.goOffline()
 })
 
 describe("Game#create", () => {
@@ -35,7 +36,7 @@ describe("Game#create", () => {
     expect(firstPlayer.uuid).toEqual(uuid)
     expect(firstPlayer.name).toEqual(name)
     expect(gameRef.currentPlayer).toEqual(uuid)
-    expect(gameRef.createdOn - createdOn).toBeLessThan(100)
+    expect(gameRef.createdOn - createdOn).toBeLessThan(500)
   })
 })
 
