@@ -111,7 +111,7 @@ export default class Game {
     const playerKey = Object.keys(this.players).find((key) => this.players[key].uuid === uuid)!
     const player = this.players[playerKey]
 
-    if (player.score === MAX_SCORE) {
+    if (player.score === MAX_SCORE || player.uuid != this.currentPlayer) {
       return false
     }
 
@@ -125,6 +125,7 @@ export default class Game {
     ]].uuid
 
     await this.db.ref(`games/${this.gid}/currentPlayer`).set(nextPlayerUuid)
+    this.currentPlayer = nextPlayerUuid
 
     return true
   }

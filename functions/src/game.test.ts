@@ -161,9 +161,12 @@ describe("Game#playerReady", () => {
 })
 
 describe("Game#playerMove", () => {
-  test("if player is incorrect, adjust score, currentPlayer uuid should adjust", async () => {
-    const game = new Game(db)
-    const gameKey = await game.create({ uuid, name })
+  let game: Game
+  let gameKey: string | null
+
+  beforeEach(async () => {
+    game = new Game(db)
+    gameKey = await game.create({ uuid, name })
 
     await game.join({ uuid: uuid2, name: name2 })
     await game.join({ uuid: uuid3, name: name3 })
@@ -171,7 +174,9 @@ describe("Game#playerMove", () => {
     await game.playerReady(uuid, true)
     await game.playerReady(uuid2, true)
     await game.playerReady(uuid3, true)
+  })
 
+  test("if player is incorrect, adjust score, currentPlayer uuid should adjust", async () => {
     let gameObj = (await db.ref(`games/${gameKey}`).once("value")).val() as Game
     let firstUser = gameObj.players[Object.keys(gameObj.players)[0]]!
     const firstCurrentPlayer = gameObj.currentPlayer
@@ -188,19 +193,10 @@ describe("Game#playerMove", () => {
     expect(firstUser.score).toEqual(1)
     expect(firstCurrentPlayer).not.toBe(secondCurrentPlayer)
     expect(secondCurrentPlayer).toBe(uuid2)
+    expect(game.currentPlayer).toBe(uuid2)
   })
 
   test("if player is correct, no score change, currentPlayer uuid should adjust", async () => {
-    const game = new Game(db)
-    const gameKey = await game.create({ uuid, name })
-
-    await game.join({ uuid: uuid2, name: name2 })
-    await game.join({ uuid: uuid3, name: name3 })
-
-    await game.playerReady(uuid, true)
-    await game.playerReady(uuid2, true)
-    await game.playerReady(uuid3, true)
-
     let gameObj = (await db.ref(`games/${gameKey}`).once("value")).val() as Game
     let firstUser = gameObj.players[Object.keys(gameObj.players)[0]]!
     const firstCurrentPlayer = gameObj.currentPlayer
@@ -217,19 +213,10 @@ describe("Game#playerMove", () => {
     expect(firstUser.score).toEqual(0)
     expect(firstCurrentPlayer).not.toBe(secondCurrentPlayer)
     expect(secondCurrentPlayer).toBe(uuid2)
+    expect(game.currentPlayer).toBe(uuid2)
   })
 
   test("if player has already hit max score, don't do anything", async () => {
-    const game = new Game(db)
-    const gameKey = await game.create({ uuid, name })
-
-    await game.join({ uuid: uuid2, name: name2 })
-    await game.join({ uuid: uuid3, name: name3 })
-
-    await game.playerReady(uuid, true)
-    await game.playerReady(uuid2, true)
-    await game.playerReady(uuid3, true)
-
     const playerKey = Object.keys(game.players).find((k) => game.players[k].uuid === uuid)
 
     await db.ref(`games/${gameKey}/players/${playerKey}/score`).set(MAX_SCORE)
@@ -254,6 +241,26 @@ describe("Game#playerMove", () => {
     expect(didPlayerMove).toBeFalsy()
     expect(firstCurrentPlayer).toBe(secondCurrentPlayer)
     expect(secondCurrentPlayer).toBe(uuid2)
+    expect(game.currentPlayer).toBe(uuid2)
+  })
+
+  test("if player isn't currentPlayer on DB object, don't do anything", async() => {
+    await game.get(game.gid!)
+
+    let gameObj = (await db.ref(`games/${gameKey}`).once("value")).val()
+    const firstCurrentPlayer = gameObj.currentPlayer
+
+    expect(firstCurrentPlayer).toBe(uuid)
+
+    const didPlayerMove = await game.playerMove(uuid2, false)
+
+    gameObj = (await db.ref(`games/${gameKey}`).once("value")).val()
+    const secondCurrentPlayer = gameObj.currentPlayer
+
+    expect(didPlayerMove).toBeFalsy()
+    expect(firstCurrentPlayer).toBe(secondCurrentPlayer)
+    expect(secondCurrentPlayer).toBe(uuid)
+    expect(game.currentPlayer).toBe(uuid)
   })
 })
 
