@@ -159,3 +159,37 @@ describe("Game#playerReady", () => {
     expect(firstPlayer.ready).toBeFalsy()
   })
 })
+
+describe("Game#playerMove", () => {
+  test("if player is incorrect, adjust score, currentPlayer uuid should adjust", async () => {
+    const game = new Game(db)
+    const gameKey = await game.create({ uuid, name })
+
+    await game.join({ uuid: uuid2, name: name2 })
+    await game.join({ uuid: uuid3, name: name3 })
+
+    await game.playerReady(uuid, true)
+    await game.playerReady(uuid2, true)
+    await game.playerReady(uuid3, true)
+
+    let gameObj = (await db.ref(`games/${gameKey}`).once("value")).val() as Game
+    let firstUser = gameObj.players[Object.keys(gameObj.players)[0]]!
+    const firstCurrentPlayer = gameObj.currentPlayer
+
+    expect(firstUser.score).toEqual(0)
+    expect(firstCurrentPlayer).toBe(uuid)
+
+    await game.playerMove(uuid, false)
+
+    gameObj = (await db.ref(`games/${gameKey}`).once("value")).val()
+    firstUser = gameObj.players[Object.keys(gameObj.players)[0]]!
+    const secondCurrentPlayer = gameObj.currentPlayer
+
+    expect(firstUser.score).toEqual(1)
+    expect(firstCurrentPlayer).not.toBe(secondCurrentPlayer)
+    expect(secondCurrentPlayer).toBe(uuid2)
+  })
+
+  // test("if player is correct, no score change, currentPlayer uuid should adjust")
+  // test("if player has already hit max score, don't do anything")
+})
