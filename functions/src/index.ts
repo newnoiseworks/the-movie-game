@@ -111,34 +111,19 @@ export const playerGameChoice = functions.https.onRequest(async (request, respon
 
   // TODO: can we get the user's UUID from the firebase
   // admin as opposed to the request to prevent spoofing?
-  const uuid = parseInt(request.query["uuid"] as string)
+  const uuid = request.query["uuid"] as string
 
   const isPersonInMovieBool = await isPersonInMovie(movieId, personId)
 
-  const gameId = request.query["gid"]
-  const gameRef = db.ref(`games/${gameId}`)
-  gameRef.once("value", (snapshot) => {
-    var game = snapshot.val()
+  const gameId = request.query["gid"] as string
+  const game = await new Game(db).get(gameId)
 
-    // TODO: confirm the user in the request is the current user in the game doc
+  const didPlayerMove = await game.playerMove(uuid, isPersonInMovieBool)
 
-    var player = game.players.find((gu: any) => gu.uuid === uuid)
-
-    if (isPersonInMovieBool === false) {
-      player.score = player.score + 1
-    }
-
-    game.currentPlayer = game.currentPlayer + 1
-
-    if (game.currentPlayer === game.players.length) {
-      game.currentPlayer = 0
-    }
-
-    gameRef.set(game, () => response.send(JSON.stringify(game)))
-  })
+  response.send(didPlayerMove)
 })
 
-async function isPersonInMovie (movieId: number, personId: number) {
+async function isPersonInMovie(movieId: number, personId: number) {
   let movieResponse
 
   try {
