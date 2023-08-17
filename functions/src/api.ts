@@ -1,7 +1,8 @@
-import axios from 'axios'
 import * as admin from "firebase-admin"
-import * as express from 'express'
+import express from 'express'
 import * as bodyParser from 'body-parser'
+import cors from 'cors'
+import axios from 'axios'
 
 import {
   getMovieSearchUrl,
@@ -11,8 +12,6 @@ import {
 } from "./tmdb-api"
 
 import Game from "./game";
-
-import * as cors from 'cors'
 
 var serviceAccount = require("../the-movie-game-fbase-admin-sdk.json")
 
@@ -74,7 +73,6 @@ app.use('/getPerson', async (request, response) => {
   response.send(personResponse.data)
 })
 
-
 // Create game call
 app.use('/createGame', async (request, response) => {
   const game: Game = new Game(admin.database())
@@ -105,7 +103,6 @@ app.use('/joinGame', async (request, response) => {
     throw err
   }
 })
-
 
 // make sure player is in game and current person
 app.use('/playerGameChoice', async (request, response) => {

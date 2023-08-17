@@ -5,8 +5,8 @@ import {
   getPersonUrlById,
 } from "./tmdb-api"
 
-const tmdbApi = "https://test-themoviedb"
-const apiKey = "TMDB_API_KEY"
+const tmdbApi = process.env.TMDB_API_URL
+const apiKey = process.env.TMDB_API_KEY
 
 describe("getMovieSearchUrl", () => {
   test("Returns correct URL w/ proper params", () => {

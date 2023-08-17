@@ -1,0 +1,122 @@
+[
+    {
+        "scope": "https://api.themoviedb.org:443",
+        "method": "GET",
+        "path": "/3/search/movie?api_key=d388ee65da239a3c7592defe1a5ad69c&query=Thank%20You%20For%20Smoking",
+        "body": "",
+        "status": 200,
+        "response": "b110250020f7cbd99faef366f73bf11adc565468429389407fa062ffffbd23fd20897fe57bef6bee850106146563d1a3b685def16c4e736853b3fbc31d7432cab5158e65ae50440c1b9458146f2b045183702ab135a840f9b58a5b5160309c5edb3d3969abdd2a2e9777a7cf4fa7a96c1856f77b3ba742981822effca26cc80f922e8b061f0c2943c193c180a1d6b55febd8880295c64a3ac3e0220abc2fa4aee0c54c8ca2e8ae3115e9398266aa5a097f88022f29ade0522e6ad3025908e3ff3ad9463a4ac18e497b9cc1519ed9a51ceecd50a6a98159617ed535b0600eaee79a712a75c01bf32f6b8050dd6b1b5329f03cb8e62a8f46400e2aaa6b0b0535994c52694d5107d4b1800c64ad041a93a97a09a5055988626f474607983a036bf44f25552820bdf9a93fee48deac95ae00330209566929c1f9a1d20e8c06ab27a3d1045c337190522e5be59cb20c74e1fa650174a5ed6f7e47c0a1030c8c36e87d473078164ca1da54d72aeb7c6478c8e039720b1451e2f3a8571eb34eb5f87fb3989cba83fcf195dfef3dc9abbbcb4e54a417b4972de35e6226a0fc22a413057ae85d7921f7428e0cb14556cac8879b99345f965089a2ef47836e050b976d2728229e241bc659f45583ac9470ce92ee96f506dd248a3ff383d66dbbca60cf342a5b781ce3859403943ff74b42d1e1925fd42dd95505e90c01f42808dbe8ce46f8adc6a57f205aed77f21f2c6fef0e964b1eff4f6eb2c7d7e5dd325eca24bfbe391827a1e745a13899958c6343b82e0afdf0096d3e18fa34e5972752d997ca640ec9186f00",
+        "rawHeaders": [
+            "Content-Type",
+            "application/json;charset=utf-8",
+            "Transfer-Encoding",
+            "chunked",
+            "Connection",
+            "close",
+            "Date",
+            "Thu, 17 Aug 2023 18:15:28 GMT",
+            "Server",
+            "openresty",
+            "Cache-Control",
+            "public, max-age=26188",
+            "X-Memc",
+            "HIT",
+            "X-Memc-Key",
+            "269b61c9c90cbd804aca1dae5b8fe81a",
+            "X-Memc-Age",
+            "15890",
+            "X-Memc-Expires",
+            "9439",
+            "ETag",
+            "W/\"9aad9febf25b90ad1f335072d9399845\"",
+            "Content-Encoding",
+            "br",
+            "Vary",
+            "Accept-Encoding",
+            "X-Cache",
+            "Hit from cloudfront",
+            "Via",
+            "1.1 326fd0f07e6ce3b75fa751c6965f21c8.cloudfront.net (CloudFront)",
+            "X-Amz-Cf-Pop",
+            "EWR53-C2",
+            "Alt-Svc",
+            "h3=\":443\"; ma=86400",
+            "X-Amz-Cf-Id",
+            "LzUjs81hE1-IezF7Vo5-UICtVUYawfSYdL4HB_MkMCVZ68gHdKQr7g==",
+            "Age",
+            "19802",
+            "Vary",
+            "Origin"
+        ],
+        "responseIsBinary": true
+    },
+    {
+        "scope": "http://127.0.0.1:3001",
+        "method": "GET",
+        "path": "/movieSearch?q=Thank%20You%20For%20Smoking",
+        "body": "",
+        "status": 200,
+        "response": {
+            "page": 1,
+            "results": [
+                {
+                    "adult": false,
+                    "backdrop_path": "/bvPsCaurkBk2jzSJXWJJXb0kTCA.jpg",
+                    "genre_ids": [
+                        35,
+                        18
+                    ],
+                    "id": 9388,
+                    "original_language": "en",
+                    "original_title": "Thank You for Smoking",
+                    "overview": "Nick Naylor is a charismatic spin-doctor for Big Tobacco who'll fight to protect America's right to smoke -- even if it kills him -- while still remaining a role model for his 12-year old son. When he incurs the wrath of a senator bent on snuffing out cigarettes, Nick's powers of \"filtering the truth\" will be put to the test.",
+                    "popularity": 13.916,
+                    "poster_path": "/yuJtEgVZ9TCWaOSN41hcMiCdz26.jpg",
+                    "release_date": "2005-09-09",
+                    "title": "Thank You for Smoking",
+                    "video": false,
+                    "vote_average": 7.185,
+                    "vote_count": 1933
+                },
+                {
+                    "adult": false,
+                    "backdrop_path": null,
+                    "genre_ids": [
+                        99,
+                        35
+                    ],
+                    "id": 685312,
+                    "original_language": "en",
+                    "original_title": "Unfiltered Comedy: The Making of 'Thank You For Smoking'",
+                    "overview": "Behind the scenes of Thank You For Smoking (2005)",
+                    "popularity": 1.4,
+                    "poster_path": "/jRSEzz92q3QdVZzSz2za3gPQEp6.jpg",
+                    "release_date": "2006-10-03",
+                    "title": "Unfiltered Comedy: The Making of 'Thank You For Smoking'",
+                    "video": false,
+                    "vote_average": 10,
+                    "vote_count": 1
+                }
+            ],
+            "total_pages": 1,
+            "total_results": 2
+        },
+        "rawHeaders": [
+            "X-Powered-By",
+            "Express",
+            "Vary",
+            "Origin",
+            "Content-Type",
+            "application/json; charset=utf-8",
+            "Content-Length",
+            "1185",
+            "ETag",
+            "W/\"4a1-RxhsHggJQRWEXF549DQST3g2t/k\"",
+            "Date",
+            "Thu, 17 Aug 2023 23:45:30 GMT",
+            "Connection",
+            "close"
+        ],
+        "responseIsBinary": false
+    }
+]
