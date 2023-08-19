@@ -1,0 +1,134 @@
+[
+    {
+        "scope": "https://api.themoviedb.org:443",
+        "method": "GET",
+        "path": "/3/person/36422?api_key=d388ee65da239a3c7592defe1a5ad69c&append_to_response=videos,images",
+        "body": "",
+        "status": 200,
+        "response": "b1b0340060a4466a9adbfd3f559bd6ff7eee3ad109559b2da5553d22b044842007b828791eb6c9209303f69fb02d0982b0ba5a5321e374848b267266ef02c48e0824ca189d02a0ad753fd5b6c43eae8f16c660e84ecf98b87ec4a9ffc2fe5262cf2520d7de56a17cc354dc237bc295b5f256f4ca5d912b22b59a5f39f84230ceef20c3e36927616b6a8c324dcb7bb853da5b03bfb0ea019ef9124a40d787bf4179204b09f03a5847a03767addbb421c23be022d8971efed04a68b1533a208003ecc439c3c3d95c9a8ae19db6618493f3d450f46c9e4d49a8894864ce56f9ada6053c2803309b3ca8f25b9b36042de1d2d69d0c040e84b2b5e3f540e0bacdba76e01aaea591e68d4f7b4f80c5bf80abe024ef089c0cb06d1bb8ead40781332d809f7f436043cb05fc809dbee7048e65c3b51e60535b232450f8010981adaa8595fce961c76b2a7f42d5587fcf81ab608d24b06f6d2070cb6b6e623b92321a43b0f030ad005c027b568bc988a22098e8b54651bec9802370ae792d7d04fbe09e22b59c29afac01ca032ac15a4f85f4c21cb3c38e61cd59d24841e0d272a19e710ab7b77e7ab80adc09bf07885704adf54199a620d1e20999610061eb69a1d7f5d235d2d4036c71ad23e454c0855670039e14afc7e3f584224126a33c34f2e8b1996993e1902504992cbac894409616591250bd78abd20ad1f4711ce779511ea6f8dec4ba4a7d0164b851879b89040def25a53181ec485038feca4eaa28af4186db5c6bee095ccbc547dbcdd5c637df623fa69a3b150664098d724a09ea4c5649f8b7c8f0dff468d6a9c749e347f1eda9bf19a593bd6474b4975e1f7f2ea902a1c338e342f6e50f6a9cf9c2bf36abafdc6ca9726471541425c195a4ee4746f33826a8bcad8a745c51403a593b9a3da6ac869e74647994d02443b83f391db246e1556574c87eb1972e496814c546a3343502dabb5e8cce762eec7bbc77773bbf7a5f5c6e3577e1f3bc3046252ed4635b23cf73ab458bc184fe87cd3e6dc7e271ef6a737a777036dc27e5fec7c3f0307433f75a8966775d1f0a948c1222d9c82fbacf72b7d8b872ff6fb7272150daec5d6c53bbd83fb8d0f1485d4636d2082eca9140e3714624a3d372de65f6b2de09b67fbbbd97a27dbf73fdf5be188e4534b949053cd2f9962fcb25",
+        "rawHeaders": [
+            "Content-Type",
+            "application/json;charset=utf-8",
+            "Transfer-Encoding",
+            "chunked",
+            "Connection",
+            "close",
+            "Date",
+            "Sat, 19 Aug 2023 17:49:07 GMT",
+            "Server",
+            "openresty",
+            "Cache-Control",
+            "public, max-age=27963",
+            "ETag",
+            "W/\"db06b208f76ded5438ad47005a4fa357\"",
+            "Content-Encoding",
+            "br",
+            "Vary",
+            "Accept-Encoding",
+            "X-Cache",
+            "Miss from cloudfront",
+            "Via",
+            "1.1 909ec3586e2eba60d35c2f3468905558.cloudfront.net (CloudFront)",
+            "X-Amz-Cf-Pop",
+            "JFK50-P7",
+            "Alt-Svc",
+            "h3=\":443\"; ma=86400",
+            "X-Amz-Cf-Id",
+            "VemK91sCI7JGVvW01eiLQaUQvW5PlzA1op3yjm7CGo4R3QoZoXrPeQ==",
+            "Vary",
+            "Origin"
+        ],
+        "responseIsBinary": true
+    },
+    {
+        "scope": "http://127.0.0.1:3001",
+        "method": "GET",
+        "path": "/getPerson?pid=36422",
+        "body": "",
+        "status": 200,
+        "response": {
+            "adult": false,
+            "also_known_as": [
+                "ルーク・ウィルソン"
+            ],
+            "biography": "Luke Cunningham Wilson (born September 21, 1971) is an American actor, director and writer. He is the younger brother of actors Owen Wilson and Andrew Wilson.\n\nHe is known for his roles in films such as Bottle Rocket, Idiocracy, The Royal Tenenbaums, Blue Streak, My Dog Skip, Old School, Alex & Emma, Legally Blonde 1 & 2, Charlie's Angels 1 & 2, The Family Stone, Hoot, Vacancy, 3:10 to Yuma, The Goldfinch, and All the Bright Places. His television credits include the series Enlightened, Roadies and DC's Stargirl as well as hosting the reality docuseries Emergency Call.",
+            "birthday": "1971-09-21",
+            "deathday": null,
+            "gender": 2,
+            "homepage": null,
+            "id": 36422,
+            "imdb_id": "nm0005561",
+            "known_for_department": "Acting",
+            "name": "Luke Wilson",
+            "place_of_birth": "Dallas, Texas, USA",
+            "popularity": 21.511,
+            "profile_path": "/uKvkiZfgs80VNsU83fG28KG3TLz.jpg",
+            "images": {
+                "profiles": [
+                    {
+                        "aspect_ratio": 0.667,
+                        "height": 1500,
+                        "iso_639_1": null,
+                        "file_path": "/uKvkiZfgs80VNsU83fG28KG3TLz.jpg",
+                        "vote_average": 5.212,
+                        "vote_count": 11,
+                        "width": 1000
+                    },
+                    {
+                        "aspect_ratio": 0.666,
+                        "height": 833,
+                        "iso_639_1": null,
+                        "file_path": "/GTx8OEQoj0GWVwSjxRCgWtzP6n.jpg",
+                        "vote_average": 5.206,
+                        "vote_count": 9,
+                        "width": 555
+                    },
+                    {
+                        "aspect_ratio": 0.667,
+                        "height": 2100,
+                        "iso_639_1": null,
+                        "file_path": "/nH1h9dZGSBuWIOyX27HpYyYykvr.jpg",
+                        "vote_average": 5.206,
+                        "vote_count": 9,
+                        "width": 1400
+                    },
+                    {
+                        "aspect_ratio": 0.667,
+                        "height": 1282,
+                        "iso_639_1": null,
+                        "file_path": "/A5Qkz7F6ASrqVDftt11gGQD1oxH.jpg",
+                        "vote_average": 5.198,
+                        "vote_count": 7,
+                        "width": 855
+                    },
+                    {
+                        "aspect_ratio": 0.668,
+                        "height": 2994,
+                        "iso_639_1": null,
+                        "file_path": "/8N7wk4oRcEtombVXedhjWrmTHdy.jpg",
+                        "vote_average": 5.128,
+                        "vote_count": 6,
+                        "width": 2000
+                    }
+                ]
+            }
+        },
+        "rawHeaders": [
+            "X-Powered-By",
+            "Express",
+            "Vary",
+            "Origin",
+            "Content-Type",
+            "application/json; charset=utf-8",
+            "Content-Length",
+            "1687",
+            "ETag",
+            "W/\"697-q/lcLiBLrAq2L7YJYlKOzgD8vHk\"",
+            "Date",
+            "Sat, 19 Aug 2023 17:49:07 GMT",
+            "Connection",
+            "close"
+        ],
+        "responseIsBinary": false
+    }
+]
