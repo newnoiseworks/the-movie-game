@@ -4,13 +4,13 @@
     "lint": "eslint --ext .js,.ts .",
     "build": "tsc",
     "build:watch": "tsc --watch",
-    "serve": "npm run build && firebase emulators:start --only functions",
+    "serve": "npm run build && firebase emulators:start",
     "shell": "npm run build && firebase functions:shell",
     "start": "npm run shell",
     "deploy": "firebase deploy --only functions",
     "logs": "firebase functions:log",
-    "test": "FIREBASE_AUTH_EMULATOR_HOST='127.0.0.1:9099' jest",
-    "test:watch": "jest --watch"
+    "test": "FIREBASE_AUTH_EMULATOR_HOST='127.0.0.1:9099' jest --runInBand",
+    "test:watch": "test -- --watch"
   },
   "engines": {
     "node": "16"
