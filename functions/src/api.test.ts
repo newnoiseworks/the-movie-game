@@ -14,6 +14,7 @@ const NOCK_BACK_OPTIONS: nock.BackOptions = {
   )
 }
 
+const db = admin.database()
 const auth = admin.auth()
 const uuids: string[] = ["uuidOne", "uuidTwo"]
 const uuidToToken: { [key: string]: string; } = {}
@@ -55,7 +56,11 @@ afterEach(() => {
 
 afterAll(async () => {
   conn.close()
-  await auth.deleteUsers(uuids)
+  await Promise.all([
+    db.ref("games").set({}),
+    auth.deleteUsers(uuids),
+  ])
+  db.goOffline()
 })
 
 describe("/movieSearch", () => {
@@ -131,15 +136,31 @@ describe("/getPerson", () => {
   })
 })
 
-// describe("/createGame", () => {
-//   beforeEach(async () => {
-//     nockDone = (await nock.back(`createGame.json`, NOCK_BACK_OPTIONS)).nockDone
-//   })
+describe("/createGame", () => {
+  beforeEach(async () => {
+    nockDone = (await nock.back(`createGame.json`, NOCK_BACK_OPTIONS)).nockDone
+  })
 
-//   test("can't create a game without authentication")
+  test("can't create a game without authentication", async () => {
+    const response = await axios.post(`/createGame`)
 
-//   test("creates a game and stores in firebase DB")
-// })
+    expect(response.status).toBe(401)
+  })
+
+  test("creates a game and stores in firebase DB", async () => {
+    const response = await axios.post(`/createGame`, {
+      token: uuidToToken[uuids[0]],
+      name: "test-game"
+    })
+
+    const gameKey = response.data
+
+    const gameRef = (await db.ref(`games/${gameKey}`).once("value")).val()
+
+    expect(gameRef.players.length).toBe(1)
+    expect(gameRef.currentPlayer).toBe(uuids[0])
+  })
+})
 
 // describe("/joinGame", () => {
 //   beforeEach(async () => {
