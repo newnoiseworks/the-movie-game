@@ -16,7 +16,7 @@ const NOCK_BACK_OPTIONS: nock.BackOptions = {
 
 const auth = admin.auth()
 const uuids: string[] = ["uuidOne", "uuidTwo"]
-const tokenToUuid: { [key: string]: string; } = {}
+const uuidToToken: { [key: string]: string; } = {}
 
 let nockDone: () => void
 let conn: http.Server
@@ -29,7 +29,7 @@ const createUser = async (uid: string, idx: number) => {
 
   const token = await auth.createCustomToken(uid)
 
-  tokenToUuid[token] = uid
+  uuidToToken[uid] = token
 }
 
 beforeAll(async () => {
