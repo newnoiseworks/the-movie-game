@@ -72,8 +72,8 @@ app.post('/createGame', apiAuth, async (request, response) => {
 
   const gameKey = await game.create({
     uuid: request.idToken!.uid,
-    name: (request.query["name"] || "") as string,
-  })
+    name: (request.body["name"] || "") as string,
+  }, request.body.gameName)
 
   response.send(gameKey)
 })

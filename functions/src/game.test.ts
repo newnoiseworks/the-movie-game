@@ -11,6 +11,7 @@ const uuid2 = uuid + "_2"
 const name2 = name + "_2"
 const uuid3 = uuid + "_3"
 const name3 = name + "_3"
+const gameName = "test-game"
 
 afterAll(async () => {
   await db.ref("games").set({})
@@ -20,7 +21,7 @@ afterAll(async () => {
 describe("Game#create", () => {
   test("creates a game and sets up objects on db", async () => {
     const createdOn = new Date().getTime()
-    const gameKey = await new Game(db).create({ uuid, name })
+    const gameKey = await new Game(db).create({ uuid, name }, gameName)
 
     const gameRef = (await db.ref(`games/${gameKey}`).once("value")).val()
     const firstPlayer = gameRef.players[Object.keys(gameRef.players)[0]]
@@ -29,7 +30,16 @@ describe("Game#create", () => {
     expect(firstPlayer.uuid).toEqual(uuid)
     expect(firstPlayer.name).toEqual(name)
     expect(gameRef.currentPlayer).toEqual(uuid)
+    expect(gameRef.name).toEqual(gameName)
     expect(gameRef.createdOn - createdOn).toBeLessThan(500)
+  })
+
+  test("makes a game name based on user name if no game name provided", async () => {
+    const gameKey = await new Game(db).create({ uuid, name })
+
+    const gameRef = (await db.ref(`games/${gameKey}`).once("value")).val()
+
+    expect(gameRef.name).toEqual(`${name}'s game`)
   })
 })
 
@@ -40,7 +50,8 @@ describe("Game#get", () => {
         [uuid]: { uuid, name },
         [uuid2]: { uuid: uuid2, name: name2 }
       },
-      createdOn: new Date().getTime()
+      createdOn: new Date().getTime(),
+      name: gameName
     })
   })
 
@@ -67,6 +78,7 @@ describe("Game#get", () => {
     expect(secondPlayer.uuid).toEqual(secondPlayerFromServer.uuid)
     expect(secondPlayer.name).toEqual(secondPlayerFromServer.name)
     expect(gameRef.currentPlayer).toEqual(gameRefFromServer.currentPlayer)
+    expect(gameRef.name).toEqual(gameName)
   })
 })
 

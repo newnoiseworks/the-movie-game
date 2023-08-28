@@ -1,9 +1,9 @@
-import admin from './fbase'
 import * as path from 'path'
 import axios, {AxiosResponse} from 'axios'
 import http from 'http'
 import nock from 'nock'
 
+import admin from './fbase'
 import api from './api'
 
 // TODO: Get nock back working, the below technically bypasses it
@@ -165,9 +165,11 @@ describe("/createGame", () => {
   })
 
   test("creates a game and stores in firebase DB", async () => {
+    const gameName = "The moviest game"
     const response = await axios.post(`/createGame`, {
       token: uuidToToken[uuids[0]],
-      name: "test-game"
+      name: "test-name",
+      gameName
     })
 
     const gameKey = response.data
@@ -177,6 +179,22 @@ describe("/createGame", () => {
     expect(response.status).toBe(200)
     expect(Object.keys(gameRef.players).length).toBe(1)
     expect(gameRef.currentPlayer).toBe(uuids[0])
+    expect(gameRef.name).toBe(gameName)
+  })
+
+  test("generates game name if non provided", async () => {
+    const gameName = "test-name's game"
+
+    const response = await axios.post(`/createGame`, {
+      token: uuidToToken[uuids[0]],
+      name: "test-name"
+    })
+
+    const gameKey = response.data
+
+    const gameRef = (await db.ref(`games/${gameKey}`).once("value")).val()
+
+    expect(gameRef.name).toBe(gameName)
   })
 })
 

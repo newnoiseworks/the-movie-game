@@ -17,19 +17,21 @@ export default class Game {
   currentPlayer?: string
   createdOn?: number
   gid?: string
+  name?: string
 
   constructor(db: admin.database.Database) {
     this.db = db
   }
 
-  async create(firstPlayer: Player) {
+  async create(firstPlayer: Player, name?: string) {
     firstPlayer.score = 0
 
     const gamesRef = this.db.ref("games")
 
     const gameRef = gamesRef.push({
       createdOn: new Date().getTime(),
-      currentPlayer: firstPlayer.uuid
+      currentPlayer: firstPlayer.uuid,
+      name: name || `${firstPlayer.name}'s game`
     })
 
     this.gid = gameRef.key as string
@@ -55,6 +57,7 @@ export default class Game {
     this.currentPlayer = gameRef.currentPlayer
     this.players = gameRef.players
     this.createdOn = gameRef.createdOn
+    this.name = gameRef.name
 
     return this
   }
