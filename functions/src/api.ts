@@ -72,27 +72,29 @@ app.post('/createGame', apiAuth, async (request, response) => {
 
   const gameKey = await game.create({
     uuid: request.idToken!.uid,
-    name: (request.body["name"] || "") as string,
+    name: request.body["name"],
   }, request.body.gameName)
 
   response.send(gameKey)
 })
 
 // Join game call
-app.use('/joinGame', async (request, response) => {
+app.use('/joinGame', apiAuth, async (request, response) => {
   const db = admin.database()
-  const gameId = (request.query["gid"] || "") as string
-
-  const game = await new Game(db).get(gameId)
+  const gameId = request.body.gid
 
   try {
+    const game = await new Game(db).get(gameId)
+
     await game.join({
-      uuid: (request.query["uuid"] || "") as string,
-      name: (request.query["name"] || "") as string,
+      uuid: request.body.uuid,
+      name: request.body.name
     })
 
     response.send()
   } catch(err) {
+    response.statusCode = 500
+    response.send()
     throw err
   }
 })

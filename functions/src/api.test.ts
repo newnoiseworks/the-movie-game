@@ -5,6 +5,7 @@ import nock from 'nock'
 
 import admin from './fbase'
 import api from './api'
+import Game from './game'
 
 // TODO: Get nock back working, the below technically bypasses it
 const NOCK_BACK_MODE = "wild"
@@ -187,7 +188,7 @@ describe("/createGame", () => {
 
     const response = await axios.post(`/createGame`, {
       token: uuidToToken[uuids[0]],
-      name: "test-name"
+      name: "test-name",
     })
 
     const gameKey = response.data
@@ -198,16 +199,62 @@ describe("/createGame", () => {
   })
 })
 
-// describe("/joinGame", () => {
+describe("/joinGame", () => {
+  const uuidOne = uuids[0]
+  const uuidTwo = uuids[1]
+  const name = "test-name"
+  const nameTwo = "test-user-two"
+  let gid: string | null
+
+  beforeEach(async () => {
+    nockDone = (await nock.back(`joinGame.json`, NOCK_BACK_OPTIONS)).nockDone
+
+    gid = await new Game(db).create({ uuid: uuidOne, name })
+  })
+
+  test("can't join a game without authentication", async () => {
+    const response = await axios.post(`/joinGame`, {
+      uuid: uuidTwo,
+      name: "test-user-two",
+      gid
+    }, {
+      validateStatus: (status) => status < 500
+    })
+
+    expect(response.status).toBe(401)
+  })
+
+  test("join game and registers user in firebase DB", async () => {
+    const response = await axios.post(`/joinGame`, {
+      uuid: uuidTwo,
+      name: nameTwo,
+      gid,
+      token: uuidToToken[uuidTwo]
+    })
+
+    const gameRefFromServer = (await db.ref(`games/${gid}`).once('value')).val() as Game
+
+    const playerTwoKey = Object.keys(gameRefFromServer.players).find((key) => gameRefFromServer.players[key].uuid === uuidTwo)
+
+    expect(response.status).toBe(200)
+    expect(playerTwoKey).toBeTruthy()
+    expect(gameRefFromServer.players[playerTwoKey!]).toBeTruthy()
+    expect(gameRefFromServer.players[playerTwoKey!].uuid).toBe(uuidTwo)
+    expect(Object.keys(gameRefFromServer.players).length).toBe(2)
+  })
+
+  test("can't double join a game", async () => {
+
+  })
+
+//   test("can't join a game when all users are ready")
+})
+
+// describe("/readyToPlay", () => {
 //   beforeEach(async () => {
-//     nockDone = (await nock.back(`joinGame.json`, NOCK_BACK_OPTIONS)).nockDone
+//     nockDone = (await nock.back(`readyToPlay.json`, NOCK_BACK_OPTIONS)).nockDone
 //   })
-
-//   test("can't join a game without authentication")
-
-//   test("join game and registers user in firebase DB")
-
-//   test("can't double join a game")
+//
 // })
 
 // describe("/playerGameChoice", () => {
