@@ -86,10 +86,14 @@ app.use('/joinGame', apiAuth, async (request, response) => {
   try {
     const game = await new Game(db).get(gameId)
 
-    await game.join({
-      uuid: request.body.uuid,
+    const didJoin = await game.join({
+      uuid: request.idToken!.uid,
       name: request.body.name
     })
+
+    if (!didJoin) {
+      response.statusCode = 422
+    }
 
     response.send()
   } catch(err) {

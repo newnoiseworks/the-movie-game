@@ -214,7 +214,6 @@ describe("/joinGame", () => {
 
   test("can't join a game without authentication", async () => {
     const response = await axios.post(`/joinGame`, {
-      uuid: uuidTwo,
       name: "test-user-two",
       gid
     }, {
@@ -226,7 +225,6 @@ describe("/joinGame", () => {
 
   test("join game and registers user in firebase DB", async () => {
     const response = await axios.post(`/joinGame`, {
-      uuid: uuidTwo,
       name: nameTwo,
       gid,
       token: uuidToToken[uuidTwo]
@@ -244,7 +242,19 @@ describe("/joinGame", () => {
   })
 
   test("can't double join a game", async () => {
+    const response = await axios.post(`/joinGame`, {
+      uuid: uuidOne,
+      name,
+      gid,
+      token: uuidToToken[uuidOne]
+    }, {
+      validateStatus: (status) => status < 500
+    })
 
+    const gameRefFromServer = (await db.ref(`games/${gid}`).once('value')).val() as Game
+
+    expect(Object.keys(gameRefFromServer.players).length).toBe(1)
+    expect(response.status).toBe(422)
   })
 
 //   test("can't join a game when all users are ready")
