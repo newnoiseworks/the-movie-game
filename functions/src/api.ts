@@ -1,4 +1,4 @@
-import * as admin from "firebase-admin"
+import admin from './fbase'
 import express from 'express'
 import * as bodyParser from 'body-parser'
 import cors from 'cors'
@@ -13,17 +13,11 @@ import {
 
 import Game from "./game";
 
-var serviceAccount = require("../the-movie-game-fbase-admin-sdk.json")
 
 const app = express()
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(cors({ origin: true }))
-
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-  databaseURL: process.env.FBASE_REALTIME_DB_URL
-})
 
 app.use('/movieSearch', async (request, response) => {
   let searchResponse

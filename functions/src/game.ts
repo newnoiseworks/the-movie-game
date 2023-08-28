@@ -1,4 +1,4 @@
-import * as admin from "firebase-admin"
+import admin from './fbase'
 
 export const MAX_SCORE = "MOVIE".length
 

@@ -1,4 +1,4 @@
-import * as admin from "firebase-admin"
+import admin from './fbase'
 import * as path from 'path'
 import axios from 'axios'
 import http from 'http'

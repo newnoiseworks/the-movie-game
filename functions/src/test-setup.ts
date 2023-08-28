@@ -1,10 +1,5 @@
-import * as admin from "firebase-admin"
+// global test setup for jest
 
-var serviceAccount = require("../the-movie-game-fbase-admin-sdk.json")
+import './fbase'
 
-export default () => {
-  admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
-    databaseURL: process.env.FBASE_REALTIME_DB_URL
-  })
-}
+export default () => undefined
