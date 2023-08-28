@@ -1,10 +1,10 @@
-import admin from './fbase'
 import express from 'express'
 import * as bodyParser from 'body-parser'
 import cors from 'cors'
 import axios from 'axios'
-import {DecodedIdToken} from "firebase-admin/auth"
 
+import apiAuth from './api-auth'
+import admin from './fbase'
 import {
   getMovieSearchUrl,
   getPersonSearchUrl,
@@ -17,6 +17,8 @@ const app = express()
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(cors({ origin: true }))
+
+const apiAuthed = app.use(apiAuth)
 
 app.use('/movieSearch', async (request, response) => {
   let searchResponse
@@ -67,26 +69,11 @@ app.use('/getPerson', async (request, response) => {
 })
 
 // Create game call
-app.post('/createGame', async (request, response) => {
-  const auth = admin.auth()
-  let decodedToken: DecodedIdToken
-
-  try {
-    decodedToken = await auth.verifyIdToken(request.body.token)
-  } catch (err) {
-    if (process.env.NODE_ENV !== 'test') {
-      console.error(err)
-    }
-
-    response.status(401)
-    response.send()
-    return
-  }
-
+apiAuthed.post('/createGame', async (request, response) => {
   const game: Game = new Game(admin.database())
 
   const gameKey = await game.create({
-    uuid: decodedToken!.uid,
+    uuid: request.idToken!.uid,
     name: (request.query["name"] || "") as string,
   })
 
