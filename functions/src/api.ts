@@ -18,8 +18,6 @@ app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(cors({ origin: true }))
 
-const apiAuthed = app.use(apiAuth)
-
 app.use('/movieSearch', async (request, response) => {
   let searchResponse
 
@@ -69,7 +67,7 @@ app.use('/getPerson', async (request, response) => {
 })
 
 // Create game call
-apiAuthed.post('/createGame', async (request, response) => {
+app.post('/createGame', apiAuth, async (request, response) => {
   const game: Game = new Game(admin.database())
 
   const gameKey = await game.create({
