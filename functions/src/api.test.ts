@@ -1,11 +1,12 @@
 import admin from './fbase'
 import * as path from 'path'
-import axios from 'axios'
+import axios, {AxiosResponse} from 'axios'
 import http from 'http'
 import nock from 'nock'
 
 import api from './api'
 
+// TODO: Get nock back working, the below technically bypasses it
 const NOCK_BACK_MODE = "wild"
 const NOCK_BACK_OPTIONS: nock.BackOptions = {
   afterRecord: (defs) => defs.filter((def) =>
@@ -30,10 +31,28 @@ const createUser = async (uid: string, idx: number) => {
 
   const token = await auth.createCustomToken(uid)
 
-  uuidToToken[uid] = token
+  let fbaseToken: AxiosResponse
+
+  // TODO: get this working with nock back to avoid excessive auth calls, OR,
+  // TODO: consider saving the below manually for now
+  try {
+    fbaseToken = await axios.post(
+      `http://localhost:9099/www.googleapis.com/identitytoolkit/v3/relyingparty/verifyCustomToken?key=${process.env.FBASE_CLIENT_API_KEY}`,
+      {
+        token: token,
+        returnSecureToken: true
+      },
+    )
+
+    uuidToToken[uid] = fbaseToken.data.idToken
+  } catch(err) {
+    throw err
+  }
 }
 
 beforeAll(async () => {
+  await Promise.all(uuids.map((uid, idx) => createUser(uid, idx)))
+
   axios.defaults.baseURL = process.env.APP_TEST_URL
 
   conn = api.listen(process.env.APP_TEST_PORT)
@@ -41,8 +60,6 @@ beforeAll(async () => {
   nock.back.fixtures = path.join(__dirname, '..', 'tapes', 'api')
   nock.back.setMode(NOCK_BACK_MODE)
   nock.enableNetConnect('127.0.0.1')
-
-  await Promise.all(uuids.map((uid, idx) => createUser(uid, idx)))
 })
 
 beforeEach(() => {
@@ -56,10 +73,8 @@ afterEach(() => {
 
 afterAll(async () => {
   conn.close()
-  await Promise.all([
-    db.ref("games").set({}),
-    auth.deleteUsers(uuids),
-  ])
+  await db.ref("games").set({})
+  await auth.deleteUsers(uuids)
   db.goOffline()
 })
 
