@@ -157,7 +157,9 @@ describe("/createGame", () => {
   })
 
   test("can't create a game without authentication", async () => {
-    const response = await axios.post(`/createGame`)
+    const response = await axios.post(`/createGame`, {}, {
+      validateStatus: (status) => status < 500
+    })
 
     expect(response.status).toBe(401)
   })
@@ -172,7 +174,8 @@ describe("/createGame", () => {
 
     const gameRef = (await db.ref(`games/${gameKey}`).once("value")).val()
 
-    expect(gameRef.players.length).toBe(1)
+    expect(response.status).toBe(200)
+    expect(Object.keys(gameRef.players).length).toBe(1)
     expect(gameRef.currentPlayer).toBe(uuids[0])
   })
 })

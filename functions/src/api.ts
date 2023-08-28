@@ -3,6 +3,7 @@ import express from 'express'
 import * as bodyParser from 'body-parser'
 import cors from 'cors'
 import axios from 'axios'
+import {DecodedIdToken} from "firebase-admin/auth"
 
 import {
   getMovieSearchUrl,
@@ -10,9 +11,7 @@ import {
   getMovieUrlById,
   getPersonUrlById,
 } from "./tmdb-api"
-
 import Game from "./game";
-
 
 const app = express()
 app.use(bodyParser.json())
@@ -68,11 +67,26 @@ app.use('/getPerson', async (request, response) => {
 })
 
 // Create game call
-app.use('/createGame', async (request, response) => {
+app.post('/createGame', async (request, response) => {
+  const auth = admin.auth()
+  let decodedToken: DecodedIdToken
+
+  try {
+    decodedToken = await auth.verifyIdToken(request.body.token)
+  } catch (err) {
+    if (process.env.NODE_ENV !== 'test') {
+      console.error(err)
+    }
+
+    response.status(401)
+    response.send()
+    return
+  }
+
   const game: Game = new Game(admin.database())
 
   const gameKey = await game.create({
-    uuid: (request.query["uuid"] || "") as string,
+    uuid: decodedToken!.uid,
     name: (request.query["name"] || "") as string,
   })
 
