@@ -103,6 +103,18 @@ app.post('/joinGame', apiAuth, async (request, response) => {
   }
 })
 
+// ready to play
+app.post('/readyToPlay', apiAuth, async (request, response) => {
+  const db = admin.database()
+  const gameId = request.body.gid
+
+  const game = await new Game(db).get(gameId)
+
+  await game.playerReady(request.idToken!.uid, request.body.ready)
+
+  response.send()
+})
+
 // make sure player is in game and current person
 app.use('/playerGameChoice', async (request, response) => {
   const db = admin.database()

@@ -1,11 +1,11 @@
 import * as path from 'path'
-import axios, {AxiosResponse} from 'axios'
+import axios, { AxiosResponse } from 'axios'
 import http from 'http'
 import nock from 'nock'
 
 import admin from './fbase'
 import api from './api'
-import Game from './game'
+import Game, { Player } from './game'
 
 // TODO: Get nock back working, the below technically bypasses it
 const NOCK_BACK_MODE = "wild"
@@ -20,6 +20,12 @@ const db = admin.database()
 const auth = admin.auth()
 const uuids: string[] = ["uuidOne", "uuidTwo", "uuidThree"]
 const uuidToToken: { [key: string]: string; } = {}
+const uuidOne = uuids[0]
+const uuidTwo = uuids[1]
+const uuidThree = uuids[2]
+const name = "test-name"
+const nameTwo = "test-user-two"
+const nameThree = "test-user-three"
 
 let nockDone: () => void
 let conn: http.Server
@@ -200,12 +206,6 @@ describe("/createGame", () => {
 })
 
 describe("/joinGame", () => {
-  const uuidOne = uuids[0]
-  const uuidTwo = uuids[1]
-  const uuidThree = uuids[2]
-  const name = "test-name"
-  const nameTwo = "test-user-two"
-  const nameThree = "test-user-three"
   let gid: string | null
 
   beforeEach(async () => {
@@ -285,12 +285,67 @@ describe("/joinGame", () => {
   })
 })
 
-// describe("/readyToPlay", () => {
-//   beforeEach(async () => {
-//     nockDone = (await nock.back(`readyToPlay.json`, NOCK_BACK_OPTIONS)).nockDone
-//   })
-//
-// })
+describe("/readyToPlay", () => {
+  let gid: string | null
+  let game: Game
+
+  beforeEach(async () => {
+    nockDone = (await nock.back(`readyToPlay.json`, NOCK_BACK_OPTIONS)).nockDone
+    gid = await new Game(db).create({
+      uuid: uuidOne,
+      name
+    })
+
+    game = await new Game(db).get(gid!)
+
+    await game.join({
+      uuid: uuidTwo,
+      name: nameTwo
+    })
+  })
+
+  test("sets ready to play as true when flag is passed as true", async () => {
+    let gameRefFromServer = (await db.ref(`games/${gid}`).once('value')).val() as Game
+
+    let firstPlayer: Player = gameRefFromServer.players[Object.keys(gameRefFromServer.players)[0]]
+
+    expect(firstPlayer.ready).toBeFalsy()
+
+    await axios.post(`/readyToPlay`, {
+      token: uuidToToken[uuids[0]],
+      ready: true,
+      gid
+    })
+
+    gameRefFromServer = (await db.ref(`games/${gid}`).once('value')).val() as Game
+
+    firstPlayer = gameRefFromServer.players[Object.keys(gameRefFromServer.players)[0]]
+
+    expect(firstPlayer.ready).toBeTruthy()
+  })
+
+  test("sets ready to play as false when flag is passed as false", async () => {
+    await game.playerReady(uuidOne, true)
+
+    let gameRefFromServer = (await db.ref(`games/${gid}`).once('value')).val() as Game
+
+    let firstPlayer: Player = gameRefFromServer.players[Object.keys(gameRefFromServer.players)[0]]
+
+    expect(firstPlayer.ready).toBeTruthy()
+
+    await axios.post(`/readyToPlay`, {
+      token: uuidToToken[uuids[0]],
+      ready: false,
+      gid
+    })
+
+    gameRefFromServer = (await db.ref(`games/${gid}`).once('value')).val() as Game
+
+    firstPlayer = gameRefFromServer.players[Object.keys(gameRefFromServer.players)[0]]
+
+    expect(firstPlayer.ready).toBeFalsy()
+  })
+})
 
 // describe("/playerGameChoice", () => {
 //   beforeEach(async () => {
