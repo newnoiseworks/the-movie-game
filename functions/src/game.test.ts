@@ -13,6 +13,11 @@ const uuid3 = uuid + "_3"
 const name3 = name + "_3"
 const gameName = "test-game"
 
+const mid1 = 1
+const pid1 = 1
+const mid2 = 2
+const pid2 = 2
+
 afterAll(async () => {
   await db.ref("games").set({})
   db.goOffline()
@@ -190,7 +195,7 @@ describe("Game#playerMove", () => {
     expect(firstUser.score).toEqual(0)
     expect(firstCurrentPlayer).toBe(uuid)
 
-    await game.playerMove(uuid, false)
+    await game.playerMove(uuid, false, { mid: mid1, pid: pid1, fromType: 'mid', toType: 'pid' })
 
     gameObj = (await db.ref(`games/${gameKey}`).once("value")).val()
     firstUser = gameObj.players[Object.keys(gameObj.players)[0]]!
@@ -210,7 +215,7 @@ describe("Game#playerMove", () => {
     expect(firstUser.score).toEqual(0)
     expect(firstCurrentPlayer).toBe(uuid)
 
-    await game.playerMove(uuid, true)
+    await game.playerMove(uuid, true, { mid: mid1, pid: pid1, fromType: 'mid', toType: 'pid' })
 
     gameObj = (await db.ref(`games/${gameKey}`).once("value")).val()
     firstUser = gameObj.players[Object.keys(gameObj.players)[0]]!
@@ -237,7 +242,7 @@ describe("Game#playerMove", () => {
     expect(firstUser.score).toEqual(MAX_SCORE)
     expect(firstCurrentPlayer).toBe(uuid2)
 
-    const didPlayerMove = await game.playerMove(uuid, false)
+    const didPlayerMove = await game.playerMove(uuid, false, { mid: mid1, pid: pid1, fromType: 'mid', toType: 'pid' })
 
     gameObj = (await db.ref(`games/${gameKey}`).once("value")).val()
     firstUser = gameObj.players[Object.keys(gameObj.players)[0]]!
@@ -250,7 +255,7 @@ describe("Game#playerMove", () => {
     expect(game.currentPlayer).toBe(uuid2)
   })
 
-  test("if player isn't currentPlayer on DB object, don't do anything", async() => {
+  test("if player isn't currentPlayer on DB object, don't do anything", async () => {
     await game.get(game.gid!)
 
     let gameObj = (await db.ref(`games/${gameKey}`).once("value")).val()
@@ -258,7 +263,7 @@ describe("Game#playerMove", () => {
 
     expect(firstCurrentPlayer).toBe(uuid)
 
-    const didPlayerMove = await game.playerMove(uuid2, false)
+    const didPlayerMove = await game.playerMove(uuid2, false, { mid: mid1, pid: pid1, fromType: 'mid', toType: 'pid' })
 
     gameObj = (await db.ref(`games/${gameKey}`).once("value")).val()
     const secondCurrentPlayer = gameObj.currentPlayer
@@ -268,5 +273,35 @@ describe("Game#playerMove", () => {
     expect(secondCurrentPlayer).toBe(uuid)
     expect(game.currentPlayer).toBe(uuid)
   })
-})
 
+  test("player cannot choose an artful liar that has already been picked", async () => {
+    await game.get(game.gid!)
+
+    let didMove = await game.playerMove(uuid, true, {
+      pid: pid2,
+      toType: 'pid',
+    })
+
+    expect(didMove).toBeTruthy()
+
+    didMove = await game.playerMove(uuid2, true, {
+      pid: pid2,
+      mid: mid2,
+      fromType: 'pid',
+      toType: 'mid'
+    })
+
+    expect(didMove).toBeTruthy()
+
+    didMove = await game.playerMove(uuid3, true, {
+      mid: mid2,
+      pid: pid2, // this artful liar has already been chosen in the first step
+      fromType: 'mid',
+      toType: 'pid'
+    })
+
+    expect(didMove).toBeFalsy()
+  })
+
+  test.todo("player cannot choose a movie that has already been picked")
+})

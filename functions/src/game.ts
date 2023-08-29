@@ -9,10 +9,19 @@ export interface Player {
   ready?: boolean
 }
 
-export default class Game {
+type idType = 'mid' | 'pid'
 
+export interface GameMove {
+  mid?: number
+  pid?: number
+  fromType?: idType
+  toType: idType
+}
+
+export default class Game {
   db: admin.database.Database
   players: { [key: string]: Player } = {}
+  history: { [key: string]: GameMove } = {}
 
   currentPlayer?: string
   createdOn?: number
@@ -109,12 +118,13 @@ export default class Game {
 
   async playerMove(
     uuid: string,
-    isCorrect: boolean
+    isCorrect: boolean,
+    move: GameMove
   ) {
     const playerKey = Object.keys(this.players).find((key) => this.players[key].uuid === uuid)!
     const player = this.players[playerKey]
 
-    if (player.score === MAX_SCORE || player.uuid != this.currentPlayer) {
+    if (!this.validatePlayerMove(player, move)) {
       return false
     }
 
@@ -127,8 +137,37 @@ export default class Game {
       playerKeyIdx + 1 === Object.keys(this.players).length ? 0 : playerKeyIdx + 1
     ]].uuid
 
-    await this.db.ref(`games/${this.gid}/currentPlayer`).set(nextPlayerUuid)
+    const gameRef = this.db.ref(`games/${this.gid}/history`)
+    gameRef.push(move)
+
+    const [_updateCurrentPlayer, gameRefObject] = await Promise.all([
+      this.db.ref(`games/${this.gid}/currentPlayer`).set(nextPlayerUuid),
+      gameRef.once("value")
+    ])
+
+    this.history = gameRefObject.val()
     this.currentPlayer = nextPlayerUuid
+
+    return true
+  }
+
+  validatePlayerMove(
+    player: Player,
+    move: GameMove
+  ): boolean {
+    if (player.score === MAX_SCORE || player.uuid != this.currentPlayer) {
+      return false
+    }
+
+    if (move.toType === 'pid' && Object.keys(this.history).find(
+      (moveKey) => this.history[moveKey].pid === move.pid
+    )) {
+      return false
+    } else if (move.toType === 'mid' && Object.keys(this.history).find(
+      (moveKey) => this.history[moveKey].mid === move.mid
+    )) {
+      return false
+    }
 
     return true
   }
