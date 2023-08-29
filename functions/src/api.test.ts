@@ -354,6 +354,10 @@ describe("/playerGameChoice", () => {
   const menaSuvariId = 8211
   const taraReidId = 1234
 
+  const filmGaslightId = 55207 // Reference!
+  const filmCasablancaId = 289
+  const ingridBergmanId = 4111
+
   beforeEach(async () => {
     nockDone = (await nock.back(`playerGameChoice.json`, NOCK_BACK_OPTIONS)).nockDone
 
@@ -448,5 +452,15 @@ describe("/playerGameChoice", () => {
 
     expect(response.status).toBe(403)
   })
+
+  test.todo("player can choose an artful liar from the movie Loser if that was the last movie picked")
+
+  test.todo("player cannot choose an artful liar that has already been picked")
+
+  test.todo("player cannot choose an artful liar from the movie Gaslight if the last movie picked was Loser")
+
+  test.todo("player cannot choose a movie that has already been picked")
+
+  test.todo("player can choose a movie Ingrid Bergman starred in if Ms. Bergman was the last artful liar picked, and the movie hasn't already been picked")
 })
 
