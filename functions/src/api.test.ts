@@ -359,13 +359,13 @@ describe("/playerGameChoice", () => {
     gid = await new Game(db).create({ uuid: uuidOne, name })
     game = await new Game(db).get(gid!)
     await game.join({ uuid: uuidTwo, name: nameTwo })
-    await game.join({ uuid: uuidThree, name: nameThree })
   })
 
   test("can't make a player choice on a game without authentication", async () => {
     const response = await axios.post(`/playerGameChoice`, {
       mid: filmLoserId,
-      pid: jasonBiggsId
+      pid: jasonBiggsId,
+      gid
     }, {
       validateStatus: (status) => status < 500
     })
@@ -373,7 +373,18 @@ describe("/playerGameChoice", () => {
     expect(response.status).toBe(401)
   })
 
-  test.todo("can't make a player choice on a game without having joined it (authorization as it were)")
+  test("can't make a player choice on a game without having joined it (authorization as it were)", async () => {
+    const response = await axios.post(`/playerGameChoice`, {
+      mid: filmLoserId,
+      pid: jasonBiggsId,
+      token: uuidToToken[uuids[2]],
+      gid
+    }, {
+      validateStatus: (status) => status < 500
+    })
+
+    expect(response.status).toBe(403)
+  })
 
   test.todo("correct choice rotates current player in DB and doesn't adjust score")
 

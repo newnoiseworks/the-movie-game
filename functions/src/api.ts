@@ -11,7 +11,7 @@ import {
   getMovieUrlById,
   getPersonUrlById,
 } from "./tmdb-api"
-import Game from "./game";
+import Game, {Player} from "./game";
 
 const app = express()
 app.use(bodyParser.json())
@@ -118,19 +118,25 @@ app.post('/readyToPlay', apiAuth, async (request, response) => {
 // make sure player is in game and current person
 app.post('/playerGameChoice', apiAuth, async (request, response) => {
   const db = admin.database()
-  const movieId = parseInt(request.query["mid"] as string)
-  const personId = parseInt(request.query["pid"] as string)
+  const game = await new Game(db).get(request.body.gid)
+  const uuid = request.idToken!.uid
 
-  // TODO: can we get the user's UUID from the firebase
-  // admin as opposed to the request to prevent spoofing?
-  const uuid = request.query["uuid"] as string
+  if (!Object.keys(game.players).find((playerKey) => {
+    game.players[playerKey].uuid === uuid
+  })) {
+    response.statusCode = 403
+    response.send()
+    return
+  }
 
-  const isPersonInMovieBool = await isPersonInMovie(movieId, personId)
+  const isPersonInMovieBool = await isPersonInMovie(
+    request.body.mid,
+    request.body.pid
+  )
 
-  const gameId = request.query["gid"] as string
-  const game = await new Game(db).get(gameId)
-
-  const didPlayerMove = await game.playerMove(uuid, isPersonInMovieBool)
+  const didPlayerMove = await game.playerMove(
+    uuid, isPersonInMovieBool
+  )
 
   response.send(didPlayerMove)
 })
