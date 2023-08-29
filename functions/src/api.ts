@@ -79,7 +79,7 @@ app.post('/createGame', apiAuth, async (request, response) => {
 })
 
 // Join game call
-app.use('/joinGame', apiAuth, async (request, response) => {
+app.post('/joinGame', apiAuth, async (request, response) => {
   const db = admin.database()
   const gameId = request.body.gid
 
