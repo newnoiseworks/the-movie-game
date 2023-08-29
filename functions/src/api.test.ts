@@ -351,7 +351,8 @@ describe("/playerGameChoice", () => {
   let gid: string | null
   let game: Game
   const filmLoserId = 10642
-  const jasonBiggsId = 21593
+  const menaSuvariId = 8211
+  const taraReidId = 1234
 
   beforeEach(async () => {
     nockDone = (await nock.back(`playerGameChoice.json`, NOCK_BACK_OPTIONS)).nockDone
@@ -364,7 +365,7 @@ describe("/playerGameChoice", () => {
   test("can't make a player choice on a game without authentication", async () => {
     const response = await axios.post(`/playerGameChoice`, {
       mid: filmLoserId,
-      pid: jasonBiggsId,
+      pid: menaSuvariId,
       gid
     }, {
       validateStatus: (status) => status < 500
@@ -376,7 +377,7 @@ describe("/playerGameChoice", () => {
   test("can't make a player choice on a game without having joined it (authorization as it were)", async () => {
     const response = await axios.post(`/playerGameChoice`, {
       mid: filmLoserId,
-      pid: jasonBiggsId,
+      pid: menaSuvariId,
       token: uuidToToken[uuids[2]],
       gid
     }, {
@@ -386,9 +387,47 @@ describe("/playerGameChoice", () => {
     expect(response.status).toBe(403)
   })
 
-  test.todo("correct choice rotates current player in DB and doesn't adjust score")
+  test("correct choice rotates current player in DB and doesn't adjust score", async () => {
+    let gameRefFromServer = (await db.ref(`games/${gid}`).once('value')).val() as Game
+    let firstPlayer = gameRefFromServer.players[Object.keys(gameRefFromServer.players)[0]] as Player
 
-  test.todo("incorrect choice rotates current player in DB and adjusts score")
+    expect(gameRefFromServer.currentPlayer).toBe(uuidOne)
+    expect(firstPlayer.score).toBe(0)
+
+    await axios.post(`/playerGameChoice`, {
+      mid: filmLoserId,
+      pid: menaSuvariId,
+      token: uuidToToken[uuids[0]],
+      gid
+    })
+
+    gameRefFromServer = (await db.ref(`games/${gid}`).once('value')).val() as Game
+    firstPlayer = gameRefFromServer.players[Object.keys(gameRefFromServer.players)[0]] as Player
+
+    expect(gameRefFromServer.currentPlayer).toBe(uuidTwo)
+    expect(firstPlayer.score).toBe(0)
+  })
+
+  test("incorrect choice rotates current player in DB and adjusts score", async () => {
+    let gameRefFromServer = (await db.ref(`games/${gid}`).once('value')).val() as Game
+    let firstPlayer = gameRefFromServer.players[Object.keys(gameRefFromServer.players)[0]] as Player
+
+    expect(gameRefFromServer.currentPlayer).toBe(uuidOne)
+    expect(firstPlayer.score).toBe(0)
+
+    await axios.post(`/playerGameChoice`, {
+      mid: filmLoserId,
+      pid: taraReidId, // FYI Tara Reid is NOT in the film "Loser"
+      token: uuidToToken[uuids[0]],
+      gid
+    })
+
+    gameRefFromServer = (await db.ref(`games/${gid}`).once('value')).val() as Game
+    firstPlayer = gameRefFromServer.players[Object.keys(gameRefFromServer.players)[0]] as Player
+
+    expect(gameRefFromServer.currentPlayer).toBe(uuidTwo)
+    expect(firstPlayer.score).toBe(1)
+  })
 
   test.todo("incorrect choice rotates current player in DB and adjusts score, causing loss to player with max score - 1")
 

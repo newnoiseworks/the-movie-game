@@ -121,9 +121,9 @@ app.post('/playerGameChoice', apiAuth, async (request, response) => {
   const game = await new Game(db).get(request.body.gid)
   const uuid = request.idToken!.uid
 
-  if (!Object.keys(game.players).find((playerKey) => {
-    game.players[playerKey].uuid === uuid
-  })) {
+  if (!Object.keys(game.players).find(
+    (playerKey) => game.players[playerKey].uuid === uuid
+  )) {
     response.statusCode = 403
     response.send()
     return
@@ -145,7 +145,7 @@ async function isPersonInMovie(movieId: number, personId: number) {
   let movieResponse
 
   try {
-    movieResponse = await axios.get(getMovieUrlById(movieId))
+    movieResponse = await axios.get(getMovieUrlById(movieId, true))
   } catch(err) {
     throw err
   }
