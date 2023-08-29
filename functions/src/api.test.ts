@@ -18,7 +18,7 @@ const NOCK_BACK_OPTIONS: nock.BackOptions = {
 
 const db = admin.database()
 const auth = admin.auth()
-const uuids: string[] = ["uuidOne", "uuidTwo"]
+const uuids: string[] = ["uuidOne", "uuidTwo", "uuidThree"]
 const uuidToToken: { [key: string]: string; } = {}
 
 let nockDone: () => void
@@ -202,8 +202,10 @@ describe("/createGame", () => {
 describe("/joinGame", () => {
   const uuidOne = uuids[0]
   const uuidTwo = uuids[1]
+  const uuidThree = uuids[2]
   const name = "test-name"
   const nameTwo = "test-user-two"
+  const nameThree = "test-user-three"
   let gid: string | null
 
   beforeEach(async () => {
@@ -257,7 +259,30 @@ describe("/joinGame", () => {
     expect(response.status).toBe(422)
   })
 
-//   test("can't join a game when all users are ready")
+  test("can't join a game when all users are ready", async () => {
+    const game = await new Game(db).get(gid!)
+    await game.join({
+      uuid: uuidTwo,
+      name: nameTwo
+    })
+
+    await game.playerReady(uuidOne, true)
+    await game.playerReady(uuidTwo, true)
+
+    const response = await axios.post(`/joinGame`, {
+      uuid: uuidThree,
+      name: nameThree,
+      gid,
+      token: uuidToToken[uuidThree]
+    }, {
+      validateStatus: (status) => status < 500
+    })
+
+    const gameRefFromServer = (await db.ref(`games/${gid}`).once('value')).val() as Game
+
+    expect(Object.keys(gameRefFromServer.players).length).toBe(2)
+    expect(response.status).toBe(422)
+  })
 })
 
 // describe("/readyToPlay", () => {
