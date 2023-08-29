@@ -347,21 +347,40 @@ describe("/readyToPlay", () => {
   })
 })
 
-// describe("/playerGameChoice", () => {
-//   beforeEach(async () => {
-//     nockDone = (await nock.back(`playerGameChoice.json`, NOCK_BACK_OPTIONS)).nockDone
-//   })
+describe("/playerGameChoice", () => {
+  let gid: string | null
+  let game: Game
+  const filmLoserId = 10642
+  const jasonBiggsId = 21593
 
-//   test("can't make a player chocie on a game without authentication")
+  beforeEach(async () => {
+    nockDone = (await nock.back(`playerGameChoice.json`, NOCK_BACK_OPTIONS)).nockDone
 
-//   test("can't make a player choice on a game without having joined it (authorization as it were)")
+    gid = await new Game(db).create({ uuid: uuidOne, name })
+    game = await new Game(db).get(gid!)
+    await game.join({ uuid: uuidTwo, name: nameTwo })
+    await game.join({ uuid: uuidThree, name: nameThree })
+  })
 
-//   test("correct choice rotates current player in DB and doesn't adjust score")
+  test("can't make a player choice on a game without authentication", async () => {
+    const response = await axios.post(`/playerGameChoice`, {
+      mid: filmLoserId,
+      pid: jasonBiggsId
+    }, {
+      validateStatus: (status) => status < 500
+    })
 
-//   test("incorrect choice rotates current player in DB and adjusts score")
+    expect(response.status).toBe(401)
+  })
 
-//   test("incorrect choice rotates current player in DB and adjusts score, causing loss to player")
+  test.todo("can't make a player choice on a game without having joined it (authorization as it were)")
 
-//   test("can't make a player choice on a game if player is at max score")
-// })
+  test.todo("correct choice rotates current player in DB and doesn't adjust score")
+
+  test.todo("incorrect choice rotates current player in DB and adjusts score")
+
+  test.todo("incorrect choice rotates current player in DB and adjusts score, causing loss to player with max score - 1")
+
+  test.todo("can't make a player choice on a game if player is at max score")
+})
 

@@ -116,7 +116,7 @@ app.post('/readyToPlay', apiAuth, async (request, response) => {
 })
 
 // make sure player is in game and current person
-app.use('/playerGameChoice', async (request, response) => {
+app.post('/playerGameChoice', apiAuth, async (request, response) => {
   const db = admin.database()
   const movieId = parseInt(request.query["mid"] as string)
   const personId = parseInt(request.query["pid"] as string)
