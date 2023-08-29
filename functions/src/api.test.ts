@@ -5,7 +5,7 @@ import nock from 'nock'
 
 import admin from './fbase'
 import api from './api'
-import Game, { Player } from './game'
+import Game, { Player, MAX_SCORE } from './game'
 
 // TODO: Get nock back working, the below technically bypasses it
 const NOCK_BACK_MODE = "wild"
@@ -429,8 +429,24 @@ describe("/playerGameChoice", () => {
     expect(firstPlayer.score).toBe(1)
   })
 
-  test.todo("incorrect choice rotates current player in DB and adjusts score, causing loss to player with max score - 1")
+  test("can't make a player choice on a game if player is at max score", async () => {
+    const gameRefFromServer = (await db.ref(`games/${gid}`).once('value')).val() as Game
+    const firstPlayerKey = Object.keys(gameRefFromServer.players)[0]
 
-  test.todo("can't make a player choice on a game if player is at max score")
+    await db.ref(`games/${gid}/players/${firstPlayerKey}/score`).set(MAX_SCORE)
+
+    expect(gameRefFromServer.currentPlayer).toBe(uuidOne)
+
+    const response = await axios.post(`/playerGameChoice`, {
+      mid: filmLoserId,
+      pid: menaSuvariId,
+      token: uuidToToken[uuidOne],
+      gid
+    }, {
+      validateStatus: (status) => status < 500
+    })
+
+    expect(response.status).toBe(403)
+  })
 })
 

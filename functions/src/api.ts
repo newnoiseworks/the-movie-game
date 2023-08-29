@@ -124,19 +124,16 @@ app.post('/playerGameChoice', apiAuth, async (request, response) => {
   if (!Object.keys(game.players).find(
     (playerKey) => game.players[playerKey].uuid === uuid
   )) {
-    response.statusCode = 403
-    response.send()
-    return
+    return respond403(response)
   }
 
-  const isPersonInMovieBool = await isPersonInMovie(
-    request.body.mid,
-    request.body.pid
-  )
+  const isPersonInMovieBool = await isPersonInMovie(request.body.mid, request.body.pid)
 
-  const didPlayerMove = await game.playerMove(
-    uuid, isPersonInMovieBool
-  )
+  const didPlayerMove = await game.playerMove(uuid, isPersonInMovieBool)
+
+  if (!didPlayerMove) {
+    return respond403(response)
+  }
 
   response.send(didPlayerMove)
 })
@@ -159,6 +156,11 @@ async function isPersonInMovie(movieId: number, personId: number) {
   )
 
   return isPersonInMovieBool
+}
+
+function respond403(response: express.Response) {
+  response.statusCode = 403
+  response.send()
 }
 
 export default app
