@@ -201,7 +201,7 @@ describe("Game#playerMove", () => {
     expect(firstUser.score).toEqual(0)
     expect(firstCurrentPlayer).toBe(uuid)
 
-    await game.playerMove(uuid, false, { mid: mid1, pid: pid1, fromType: 'mid', toType: 'pid' })
+    await game.playerMove(uuid, false, { mid: mid1, pid: pid1, toType: 'pid' })
 
     gameObj = (await db.ref(`games/${gameKey}`).once("value")).val()
     firstUser = gameObj.players[Object.keys(gameObj.players)[0]]!
@@ -221,7 +221,7 @@ describe("Game#playerMove", () => {
     expect(firstUser.score).toEqual(0)
     expect(firstCurrentPlayer).toBe(uuid)
 
-    await game.playerMove(uuid, true, { mid: mid1, pid: pid1, fromType: 'mid', toType: 'pid' })
+    await game.playerMove(uuid, true, { mid: mid1, pid: pid1, toType: 'pid' })
 
     gameObj = (await db.ref(`games/${gameKey}`).once("value")).val()
     firstUser = gameObj.players[Object.keys(gameObj.players)[0]]!
@@ -248,7 +248,7 @@ describe("Game#playerMove", () => {
     expect(firstUser.score).toEqual(MAX_SCORE)
     expect(firstCurrentPlayer).toBe(uuid2)
 
-    await expect(game.playerMove(uuid, false, { mid: mid1, pid: pid1, fromType: 'mid', toType: 'pid' })).rejects.toThrow(GameErrorCantMoveWithMaxScore)
+    await expect(game.playerMove(uuid, false, { mid: mid1, pid: pid1, toType: 'pid' })).rejects.toThrow(GameErrorCantMoveWithMaxScore)
 
     gameObj = (await db.ref(`games/${gameKey}`).once("value")).val()
     firstUser = gameObj.players[Object.keys(gameObj.players)[0]]!
@@ -268,7 +268,7 @@ describe("Game#playerMove", () => {
 
     expect(firstCurrentPlayer).toBe(uuid)
 
-    await expect(game.playerMove(uuid2, false, { mid: mid1, pid: pid1, fromType: 'mid', toType: 'pid' })).rejects.toThrow(GameErrorCantMoveWhenNotCurrentPlayer)
+    await expect(game.playerMove(uuid2, false, { mid: mid1, pid: pid1, toType: 'pid' })).rejects.toThrow(GameErrorCantMoveWhenNotCurrentPlayer)
 
     gameObj = (await db.ref(`games/${gameKey}`).once("value")).val()
     const secondCurrentPlayer = gameObj.currentPlayer
@@ -289,14 +289,12 @@ describe("Game#playerMove", () => {
     await game.playerMove(uuid2, true, {
       pid: pid2,
       mid: mid2,
-      fromType: 'pid',
       toType: 'mid'
     })
 
     await expect(game.playerMove(uuid3, true, {
       mid: mid2,
       pid: pid2, // this artful liar has already been chosen in the first step
-      fromType: 'mid',
       toType: 'pid'
     })).rejects.toThrow(GameErrorMovieOrArtfulLiarAlreadyChosen)
   })
@@ -312,21 +310,18 @@ describe("Game#playerMove", () => {
     await game.playerMove(uuid2, true, {
       pid: pid2,
       mid: mid2,
-      fromType: 'pid',
       toType: 'mid'
     })
 
     await game.playerMove(uuid3, true, {
       mid: mid2,
       pid: pid1, // this artful liar has already been chosen in the first step
-      fromType: 'mid',
       toType: 'pid'
     })
 
     await expect(game.playerMove(uuid, true, {
       pid: pid1,
       mid: mid2, // this movie has already been chosen in the third step
-      fromType: 'pid',
       toType: 'mid',
     })).rejects.toThrow(GameErrorMovieOrArtfulLiarAlreadyChosen)
   })

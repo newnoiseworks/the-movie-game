@@ -14,7 +14,6 @@ type idType = 'mid' | 'pid'
 export interface GameMove {
   mid?: number
   pid?: number
-  fromType?: idType
   toType: idType
 }
 
