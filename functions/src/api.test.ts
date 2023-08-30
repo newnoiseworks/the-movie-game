@@ -415,7 +415,7 @@ describe("/playerGameChoice", () => {
     expect(firstPlayer.score).toBe(0)
   })
 
-  test("incorrect choice rotates current player in DB and adjusts score", async () => {
+  test("incorrect choice (Tara Reid in Loser, which she is not in) rotates current player in DB and adjusts score", async () => {
     let gameRefFromServer = (await db.ref(`games/${gid}`).once('value')).val() as Game
     let firstPlayer = gameRefFromServer.players[Object.keys(gameRefFromServer.players)[0]] as Player
 
@@ -506,10 +506,61 @@ describe("/playerGameChoice", () => {
     expect(response.data).toBe(new GameErrorMovieOrArtfulLiarAlreadyChosen().message)
   })
 
-  test.todo("player cannot choose an artful liar from the movie Gaslight if the last movie picked was Loser")
+  test("player cannot choose a movie that has already been picked", async () => {
+    await axios.post(`/playerGameChoice`, {
+      mid: filmGaslightId,
+      token: uuidToToken[uuidOne],
+      toType: 'mid',
+      gid
+    })
 
-  test.todo("player cannot choose a movie that has already been picked")
+    await axios.post(`/playerGameChoice`, {
+      pid: ingridBergmanId,
+      mid: filmGaslightId,
+      token: uuidToToken[uuidTwo],
+      toType: 'pid',
+      gid
+    })
 
-  test.todo("player can choose a movie Ingrid Bergman starred in if Ms. Bergman was the last artful liar picked, and the movie hasn't already been picked")
+    const response = await axios.post('/playerGameChoice', {
+      pid: ingridBergmanId,
+      mid: filmGaslightId,
+      token: uuidToToken[uuidOne],
+      toType: 'mid',
+      gid
+    }, {
+      validateStatus: (status) => status < 500
+    })
+
+    expect(response.status).toBe(403)
+    expect(response.data).toBe(new GameErrorMovieOrArtfulLiarAlreadyChosen().message)
+  })
+
+  test("player can choose a movie Ingrid Bergman starred in if Ms. Bergman was the last artful liar picked, and the movie hasn't already been picked", async () => {
+    await axios.post(`/playerGameChoice`, {
+      mid: filmCasablancaId,
+      token: uuidToToken[uuidOne],
+      toType: 'mid',
+      gid
+    })
+
+    await axios.post(`/playerGameChoice`, {
+      pid: ingridBergmanId,
+      mid: filmCasablancaId,
+      token: uuidToToken[uuidTwo],
+      toType: 'pid',
+      gid
+    })
+
+    const response = await axios.post('/playerGameChoice', {
+      pid: ingridBergmanId,
+      mid: filmGaslightId,
+      token: uuidToToken[uuidOne],
+      toType: 'mid',
+      gid
+    })
+
+    expect(response.status).toBe(200)
+  })
 })
 
