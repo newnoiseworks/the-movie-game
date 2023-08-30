@@ -124,21 +124,25 @@ app.post('/playerGameChoice', apiAuth, async (request, response) => {
   if (!Object.keys(game.players).find(
     (playerKey) => game.players[playerKey].uuid === uuid
   )) {
-    return respond403(response)
+    return respond403(response, "Player not joined onto this game")
   }
 
   const isPersonInMovieBool = await isPersonInMovie(request.body.mid, request.body.pid)
 
-  const didPlayerMove = await game.playerMove(uuid, isPersonInMovieBool, {
-    // TODO: garbage code meant to help other tests pass
-    mid: 99999, pid: 99999, toType: 'mid'
-  })
+  try {
+    await game.playerMove(uuid, isPersonInMovieBool, {
+      // TODO: garbage code meant to help other tests pass
+      mid: 99999, pid: 99999, toType: 'mid'
+    })
+  } catch(err) {
+    if (process.env.NODE_ENV !== 'test') {
+      console.error(err)
+    }
 
-  if (!didPlayerMove) {
-    return respond403(response)
+    return respond403(response, err as string)
   }
 
-  response.send(didPlayerMove)
+  response.send()
 })
 
 async function isPersonInMovie(movieId: number, personId: number) {
@@ -161,9 +165,9 @@ async function isPersonInMovie(movieId: number, personId: number) {
   return isPersonInMovieBool
 }
 
-function respond403(response: express.Response) {
+function respond403(response: express.Response, message: string) {
   response.statusCode = 403
-  response.send()
+  response.send(message)
 }
 
 export default app

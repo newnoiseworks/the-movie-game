@@ -124,9 +124,7 @@ export default class Game {
     const playerKey = Object.keys(this.players).find((key) => this.players[key].uuid === uuid)!
     const player = this.players[playerKey]
 
-    if (!this.validatePlayerMove(player, move)) {
-      return false
-    }
+    this.validatePlayerMove(player, move)
 
     if (!isCorrect) {
       await this.db.ref(`games/${this.gid}/players/${playerKey}/score`).set((player.score || 0) + 1)
@@ -147,14 +145,12 @@ export default class Game {
 
     this.history = gameRefObject.val()
     this.currentPlayer = nextPlayerUuid
-
-    return true
   }
 
   validatePlayerMove(
     player: Player,
     move: GameMove
-  ): boolean {
+  ) {
     if (player.score === MAX_SCORE) {
       throw new GameErrorCantMoveWithMaxScore()
     }
@@ -170,8 +166,6 @@ export default class Game {
     )) {
       throw new GameErrorMovieOrArtfulLiarAlreadyChosen()
     }
-
-    return true
   }
 }
 
