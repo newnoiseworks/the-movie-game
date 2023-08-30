@@ -26,6 +26,9 @@ const uuidThree = uuids[2]
 const name = "test-name"
 const nameTwo = "test-user-two"
 const nameThree = "test-user-three"
+const allow400sConfig: AxiosRequestConfig = {
+  validateStatus: (status) => status < 500
+}
 
 let nockDone: () => void
 let conn: http.Server
@@ -164,9 +167,7 @@ describe("/createGame", () => {
   })
 
   test("can't create a game without authentication", async () => {
-    const response = await axios.post(`/createGame`, {}, {
-      validateStatus: (status) => status < 500
-    })
+    const response = await axios.post(`/createGame`, {}, allow400sConfig)
 
     expect(response.status).toBe(401)
   })
@@ -218,9 +219,7 @@ describe("/joinGame", () => {
     const response = await axios.post(`/joinGame`, {
       name: "test-user-two",
       gid
-    }, {
-      validateStatus: (status) => status < 500
-    })
+    }, allow400sConfig)
 
     expect(response.status).toBe(401)
   })
@@ -249,9 +248,7 @@ describe("/joinGame", () => {
       name,
       gid,
       token: uuidToToken[uuidOne]
-    }, {
-      validateStatus: (status) => status < 500
-    })
+    }, allow400sConfig)
 
     const gameRefFromServer = (await db.ref(`games/${gid}`).once('value')).val() as Game
 
@@ -274,9 +271,7 @@ describe("/joinGame", () => {
       name: nameThree,
       gid,
       token: uuidToToken[uuidThree]
-    }, {
-      validateStatus: (status) => status < 500
-    })
+    }, allow400sConfig)
 
     const gameRefFromServer = (await db.ref(`games/${gid}`).once('value')).val() as Game
 
@@ -373,9 +368,7 @@ describe("/playerGameChoice", () => {
       mid: filmLoserId,
       pid: menaSuvariId,
       gid
-    }, {
-      validateStatus: (status) => status < 500
-    })
+    }, allow400sConfig)
 
     expect(response.status).toBe(401)
   })
@@ -386,9 +379,7 @@ describe("/playerGameChoice", () => {
       pid: menaSuvariId,
       token: uuidToToken[uuids[2]],
       gid
-    }, {
-      validateStatus: (status) => status < 500
-    })
+    }, allow400sConfig)
 
     expect(response.status).toBe(403)
   })
@@ -450,9 +441,7 @@ describe("/playerGameChoice", () => {
       pid: menaSuvariId,
       token: uuidToToken[uuidOne],
       gid
-    }, {
-      validateStatus: (status) => status < 500
-    })
+    }, allow400sConfig)
 
     expect(response.status).toBe(403)
   })
@@ -498,9 +487,7 @@ describe("/playerGameChoice", () => {
       token: uuidToToken[uuidOne],
       toType: 'pid',
       gid
-    }, {
-      validateStatus: (status) => status < 500
-    })
+    }, allow400sConfig)
 
     expect(response.status).toBe(403)
     expect(response.data).toBe(new GameErrorMovieOrArtfulLiarAlreadyChosen().message)
@@ -528,9 +515,7 @@ describe("/playerGameChoice", () => {
       token: uuidToToken[uuidOne],
       toType: 'mid',
       gid
-    }, {
-      validateStatus: (status) => status < 500
-    })
+    }, allow400sConfig)
 
     expect(response.status).toBe(403)
     expect(response.data).toBe(new GameErrorMovieOrArtfulLiarAlreadyChosen().message)
