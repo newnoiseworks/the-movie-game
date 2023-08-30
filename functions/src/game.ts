@@ -155,21 +155,44 @@ export default class Game {
     player: Player,
     move: GameMove
   ): boolean {
-    if (player.score === MAX_SCORE || player.uuid != this.currentPlayer) {
-      return false
+    if (player.score === MAX_SCORE) {
+      throw new GameErrorCantMoveWithMaxScore()
+    }
+
+    if (player.uuid != this.currentPlayer) {
+      throw new GameErrorCantMoveWhenNotCurrentPlayer()
     }
 
     if (move.toType === 'pid' && Object.keys(this.history).find(
       (moveKey) => this.history[moveKey].pid === move.pid
-    )) {
-      return false
-    } else if (move.toType === 'mid' && Object.keys(this.history).find(
+    ) || move.toType === 'mid' && Object.keys(this.history).find(
       (moveKey) => this.history[moveKey].mid === move.mid
     )) {
-      return false
+      throw new GameErrorMovieOrArtfulLiarAlreadyChosen()
     }
 
     return true
+  }
+}
+
+export class GameErrorCantMoveWithMaxScore extends Error {
+  constructor() {
+    super("Player can't make a move due to having lost by hitting max score")
+    this.name = GameErrorCantMoveWithMaxScore.name
+  }
+}
+
+export class GameErrorCantMoveWhenNotCurrentPlayer extends Error {
+  constructor() {
+    super("Player can't make a move when their uid is not the game's curent player")
+    this.name = GameErrorCantMoveWhenNotCurrentPlayer.name
+  }
+}
+
+export class GameErrorMovieOrArtfulLiarAlreadyChosen extends Error {
+  constructor() {
+    super("This movie or artful liar has already been chosen")
+    this.name = GameErrorMovieOrArtfulLiarAlreadyChosen.name
   }
 }
 

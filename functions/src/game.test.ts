@@ -1,6 +1,12 @@
 import admin from './fbase'
 
-import Game, { MAX_SCORE, Player } from './game'
+import Game, {
+  GameErrorCantMoveWhenNotCurrentPlayer,
+  GameErrorCantMoveWithMaxScore,
+  GameErrorMovieOrArtfulLiarAlreadyChosen,
+  MAX_SCORE,
+  Player
+} from './game'
 
 const db = admin.database()
 
@@ -242,14 +248,13 @@ describe("Game#playerMove", () => {
     expect(firstUser.score).toEqual(MAX_SCORE)
     expect(firstCurrentPlayer).toBe(uuid2)
 
-    const didPlayerMove = await game.playerMove(uuid, false, { mid: mid1, pid: pid1, fromType: 'mid', toType: 'pid' })
+    await expect(game.playerMove(uuid, false, { mid: mid1, pid: pid1, fromType: 'mid', toType: 'pid' })).rejects.toThrow(GameErrorCantMoveWithMaxScore)
 
     gameObj = (await db.ref(`games/${gameKey}`).once("value")).val()
     firstUser = gameObj.players[Object.keys(gameObj.players)[0]]!
     const secondCurrentPlayer = gameObj.currentPlayer
 
     expect(firstUser.score).toEqual(MAX_SCORE)
-    expect(didPlayerMove).toBeFalsy()
     expect(firstCurrentPlayer).toBe(secondCurrentPlayer)
     expect(secondCurrentPlayer).toBe(uuid2)
     expect(game.currentPlayer).toBe(uuid2)
@@ -263,12 +268,11 @@ describe("Game#playerMove", () => {
 
     expect(firstCurrentPlayer).toBe(uuid)
 
-    const didPlayerMove = await game.playerMove(uuid2, false, { mid: mid1, pid: pid1, fromType: 'mid', toType: 'pid' })
+    await expect(game.playerMove(uuid2, false, { mid: mid1, pid: pid1, fromType: 'mid', toType: 'pid' })).rejects.toThrow(GameErrorCantMoveWhenNotCurrentPlayer)
 
     gameObj = (await db.ref(`games/${gameKey}`).once("value")).val()
     const secondCurrentPlayer = gameObj.currentPlayer
 
-    expect(didPlayerMove).toBeFalsy()
     expect(firstCurrentPlayer).toBe(secondCurrentPlayer)
     expect(secondCurrentPlayer).toBe(uuid)
     expect(game.currentPlayer).toBe(uuid)
@@ -277,67 +281,53 @@ describe("Game#playerMove", () => {
   test("player cannot choose an artful liar that has already been picked", async () => {
     await game.get(game.gid!)
 
-    let didMove = await game.playerMove(uuid, true, {
+    await game.playerMove(uuid, true, {
       pid: pid2,
       toType: 'pid',
     })
 
-    expect(didMove).toBeTruthy()
-
-    didMove = await game.playerMove(uuid2, true, {
+    await game.playerMove(uuid2, true, {
       pid: pid2,
       mid: mid2,
       fromType: 'pid',
       toType: 'mid'
     })
 
-    expect(didMove).toBeTruthy()
-
-    didMove = await game.playerMove(uuid3, true, {
+    await expect(game.playerMove(uuid3, true, {
       mid: mid2,
       pid: pid2, // this artful liar has already been chosen in the first step
       fromType: 'mid',
       toType: 'pid'
-    })
-
-    expect(didMove).toBeFalsy()
+    })).rejects.toThrow(GameErrorMovieOrArtfulLiarAlreadyChosen)
   })
 
   test("player cannot choose a movie that has already been picked", async () => {
     await game.get(game.gid!)
 
-    let didMove = await game.playerMove(uuid, true, {
+    await game.playerMove(uuid, true, {
       pid: pid2,
       toType: 'pid',
     })
 
-    expect(didMove).toBeTruthy()
-
-    didMove = await game.playerMove(uuid2, true, {
+    await game.playerMove(uuid2, true, {
       pid: pid2,
       mid: mid2,
       fromType: 'pid',
       toType: 'mid'
     })
 
-    expect(didMove).toBeTruthy()
-
-    didMove = await game.playerMove(uuid3, true, {
+    await game.playerMove(uuid3, true, {
       mid: mid2,
       pid: pid1, // this artful liar has already been chosen in the first step
       fromType: 'mid',
       toType: 'pid'
     })
 
-    expect(didMove).toBeTruthy()
-
-    didMove = await game.playerMove(uuid, true, {
+    await expect(game.playerMove(uuid, true, {
       pid: pid1,
       mid: mid2, // this movie has already been chosen in the third step
       fromType: 'pid',
       toType: 'mid',
-    })
-
-    expect(didMove).toBeFalsy()
+    })).rejects.toThrow(GameErrorMovieOrArtfulLiarAlreadyChosen)
   })
 })
