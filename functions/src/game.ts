@@ -109,7 +109,7 @@ export default class Game {
   }
 
   async playerReady(uuid: string, ready: boolean = true) {
-    const playerKey = Object.keys(this.players).find((key) => this.players[key].uuid === uuid)!
+    const playerKey = this.sortedKeys(this.players).find((key) => this.players[key].uuid === uuid)!
 
     await this.db.ref(`games/${this.gid}/players/${playerKey}`).update({ ready })
 
@@ -121,7 +121,7 @@ export default class Game {
     isCorrect: boolean,
     move: GameMove
   ) {
-    const playerKey = Object.keys(this.players).find((key) => this.players[key].uuid === uuid)!
+    const playerKey = this.sortedKeys(this.players).find((key) => this.players[key].uuid === uuid)!
     const player = this.players[playerKey]
 
     this.validatePlayerMove(player, move)
@@ -130,9 +130,9 @@ export default class Game {
       await this.db.ref(`games/${this.gid}/players/${playerKey}/score`).set((player.score || 0) + 1)
     }
 
-    const playerKeyIdx = Object.keys(this.players).findIndex((k) => k === playerKey)
-    const nextPlayerUuid = this.players[Object.keys(this.players)[
-      playerKeyIdx + 1 === Object.keys(this.players).length ? 0 : playerKeyIdx + 1
+    const playerKeyIdx = this.sortedKeys(this.players).findIndex((k) => k === playerKey)
+    const nextPlayerUuid = this.players[this.sortedKeys(this.players)[
+      playerKeyIdx + 1 === this.sortedKeys(this.players).length ? 0 : playerKeyIdx + 1
     ]].uuid
 
     const gameRefHistory = this.db.ref(`games/${this.gid}/history`)
@@ -160,11 +160,11 @@ export default class Game {
     }
 
     const lastMove = this.history[
-      Object.keys(this.history)[Object.keys(this.history).length - 1]
+      this.sortedKeys(this.history)[this.sortedKeys(this.history).length - 1]
     ]
 
     if (move.toType === 'pid') {
-      if (Object.keys(this.history).find(
+      if (this.sortedKeys(this.history).find(
         (moveKey) => {
           const historicalMove = this.history[moveKey]
           return historicalMove.toType === 'pid' && historicalMove.pid === move.pid
@@ -179,7 +179,7 @@ export default class Game {
     }
 
     if (move.toType === 'mid') {
-      if (Object.keys(this.history).find(
+      if (this.sortedKeys(this.history).find(
         (moveKey) => {
           const historicalMove = this.history[moveKey]
           return historicalMove.toType === 'mid' && historicalMove.mid === move.mid
@@ -192,6 +192,10 @@ export default class Game {
         throw new GameErrorPreviousMovieDoesntMatchCurrent()
       }
     }
+  }
+
+  sortedKeys(obj: object) {
+    return Object.keys(obj).sort()
   }
 }
 
