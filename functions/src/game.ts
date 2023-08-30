@@ -66,6 +66,7 @@ export default class Game {
     this.players = gameRef.players
     this.createdOn = gameRef.createdOn
     this.name = gameRef.name
+    this.history = gameRef.history || {}
 
     return this
   }
@@ -134,15 +135,15 @@ export default class Game {
       playerKeyIdx + 1 === Object.keys(this.players).length ? 0 : playerKeyIdx + 1
     ]].uuid
 
-    const gameRef = this.db.ref(`games/${this.gid}/history`)
-    gameRef.push(move)
+    const gameRefHistory = this.db.ref(`games/${this.gid}/history`)
+    gameRefHistory.push(move)
 
-    const [_updateCurrentPlayer, gameRefObject] = await Promise.all([
+    const [_updateCurrentPlayer, gameRefHistoryObject] = await Promise.all([
       this.db.ref(`games/${this.gid}/currentPlayer`).set(nextPlayerUuid),
-      gameRef.once("value")
+      gameRefHistory.once("value")
     ])
 
-    this.history = gameRefObject.val()
+    this.history = gameRefHistoryObject.val()
     this.currentPlayer = nextPlayerUuid
   }
 
@@ -158,11 +159,17 @@ export default class Game {
       throw new GameErrorCantMoveWhenNotCurrentPlayer()
     }
 
-    if (move.toType === 'pid' && Object.keys(this.history).find(
-      (moveKey) => this.history[moveKey].pid === move.pid
-    ) || move.toType === 'mid' && Object.keys(this.history).find(
-      (moveKey) => this.history[moveKey].mid === move.mid
-    )) {
+    if ((move.toType === 'pid' && Object.keys(this.history).find(
+      (moveKey) => {
+        const historicalMove = this.history[moveKey]
+        return historicalMove.toType === 'pid' && historicalMove.pid === move.pid
+      }
+    )) || (move.toType === 'mid' && Object.keys(this.history).find(
+      (moveKey) => {
+        const historicalMove = this.history[moveKey]
+        return historicalMove.toType === 'mid' && historicalMove.mid === move.mid
+      }
+    ))) {
       throw new GameErrorMovieOrArtfulLiarAlreadyChosen()
     }
   }
