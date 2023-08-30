@@ -303,5 +303,41 @@ describe("Game#playerMove", () => {
     expect(didMove).toBeFalsy()
   })
 
-  test.todo("player cannot choose a movie that has already been picked")
+  test("player cannot choose a movie that has already been picked", async () => {
+    await game.get(game.gid!)
+
+    let didMove = await game.playerMove(uuid, true, {
+      pid: pid2,
+      toType: 'pid',
+    })
+
+    expect(didMove).toBeTruthy()
+
+    didMove = await game.playerMove(uuid2, true, {
+      pid: pid2,
+      mid: mid2,
+      fromType: 'pid',
+      toType: 'mid'
+    })
+
+    expect(didMove).toBeTruthy()
+
+    didMove = await game.playerMove(uuid3, true, {
+      mid: mid2,
+      pid: pid1, // this artful liar has already been chosen in the first step
+      fromType: 'mid',
+      toType: 'pid'
+    })
+
+    expect(didMove).toBeTruthy()
+
+    didMove = await game.playerMove(uuid, true, {
+      pid: pid1,
+      mid: mid2, // this movie has already been chosen in the third step
+      fromType: 'pid',
+      toType: 'mid',
+    })
+
+    expect(didMove).toBeFalsy()
+  })
 })
