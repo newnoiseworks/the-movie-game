@@ -1,11 +1,11 @@
 import * as path from 'path'
-import axios, { AxiosResponse } from 'axios'
+import axios, { AxiosError, AxiosResponse } from 'axios'
 import http from 'http'
 import nock from 'nock'
 
 import admin from './fbase'
 import api from './api'
-import Game, { Player, MAX_SCORE } from './game'
+import Game, { Player, MAX_SCORE, GameErrorMovieOrArtfulLiarAlreadyChosen } from './game'
 
 // TODO: Get nock back working, the below technically bypasses it
 const NOCK_BACK_MODE = "wild"
@@ -364,6 +364,8 @@ describe("/playerGameChoice", () => {
     gid = await new Game(db).create({ uuid: uuidOne, name })
     game = await new Game(db).get(gid!)
     await game.join({ uuid: uuidTwo, name: nameTwo })
+    await game.playerReady(uuidOne, true)
+    await game.playerReady(uuidTwo, true)
   })
 
   test("can't make a player choice on a game without authentication", async () => {
@@ -402,6 +404,7 @@ describe("/playerGameChoice", () => {
       mid: filmLoserId,
       pid: menaSuvariId,
       token: uuidToToken[uuids[0]],
+      toType: 'pid',
       gid
     })
 
@@ -423,6 +426,7 @@ describe("/playerGameChoice", () => {
       mid: filmLoserId,
       pid: taraReidId, // FYI Tara Reid is NOT in the film "Loser"
       token: uuidToToken[uuids[0]],
+      toType: 'pid',
       gid
     })
 
@@ -453,9 +457,54 @@ describe("/playerGameChoice", () => {
     expect(response.status).toBe(403)
   })
 
-  test.todo("player can choose an artful liar from the movie Loser if that was the last movie picked")
+  test("player can choose artful liar Mena Suvari from the movie Loser if that was the last movie picked", async () => {
+    await axios.post(`/playerGameChoice`, {
+      mid: filmLoserId,
+      token: uuidToToken[uuidOne],
+      toType: 'mid',
+      gid
+    })
 
-  test.todo("player cannot choose an artful liar that has already been picked")
+    const response = await axios.post(`/playerGameChoice`, {
+      mid: filmLoserId,
+      pid: menaSuvariId,
+      token: uuidToToken[uuidTwo],
+      toType: 'pid',
+      gid
+    })
+
+    expect(response.status).toBe(200)
+  })
+
+  test("player cannot choose an artful liar that has already been picked", async () => {
+    await axios.post(`/playerGameChoice`, {
+      pid: menaSuvariId,
+      token: uuidToToken[uuidOne],
+      toType: 'pid',
+      gid
+    })
+
+    await axios.post(`/playerGameChoice`, {
+      pid: menaSuvariId,
+      mid: filmLoserId,
+      token: uuidToToken[uuidTwo],
+      toType: 'mid',
+      gid
+    })
+
+    const response = await axios.post('/playerGameChoice', {
+      mid: filmLoserId,
+      pid: menaSuvariId,
+      token: uuidToToken[uuidOne],
+      toType: 'pid',
+      gid
+    }, {
+      validateStatus: (status) => status < 500
+    })
+
+    expect(response.status).toBe(403)
+    expect(response.data).toBe(new GameErrorMovieOrArtfulLiarAlreadyChosen().message)
+  })
 
   test.todo("player cannot choose an artful liar from the movie Gaslight if the last movie picked was Loser")
 

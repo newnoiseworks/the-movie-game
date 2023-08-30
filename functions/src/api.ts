@@ -11,7 +11,7 @@ import {
   getMovieUrlById,
   getPersonUrlById,
 } from "./tmdb-api"
-import Game from "./game";
+import Game, {GameMove} from "./game";
 
 const app = express()
 app.use(bodyParser.json())
@@ -120,26 +120,26 @@ app.post('/playerGameChoice', apiAuth, async (request, response) => {
   const db = admin.database()
   const game = await new Game(db).get(request.body.gid)
   const uuid = request.idToken!.uid
+  const { mid, pid } = request.body
 
-  if (!Object.keys(game.players).find(
-    (playerKey) => game.players[playerKey].uuid === uuid
-  )) {
+  if (!Object.keys(game.players).find((playerKey) => game.players[playerKey].uuid === uuid)) {
     return respond403(response, "Player not joined onto this game")
   }
 
-  const isPersonInMovieBool = await isPersonInMovie(request.body.mid, request.body.pid)
+  const isPersonInMovieBool = !!mid && !!pid ? await isPersonInMovie(mid, pid) : true
+
+  const move: GameMove = { toType: request.body.toType }
+  if (!!mid) move.mid = mid
+  if (!!pid) move.pid = pid
 
   try {
-    await game.playerMove(uuid, isPersonInMovieBool, {
-      // TODO: garbage code meant to help other tests pass
-      mid: 99999, pid: 99999, toType: 'mid'
-    })
-  } catch(err) {
+    await game.playerMove(uuid, isPersonInMovieBool, move)
+  } catch(err: any) {
     if (process.env.NODE_ENV !== 'test') {
-      console.error(err)
+      console.error(err.message)
     }
 
-    return respond403(response, err as string)
+    return respond403(response, err.message)
   }
 
   response.send()
