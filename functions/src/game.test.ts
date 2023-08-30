@@ -4,6 +4,8 @@ import Game, {
   GameErrorCantMoveWhenNotCurrentPlayer,
   GameErrorCantMoveWithMaxScore,
   GameErrorMovieOrArtfulLiarAlreadyChosen,
+  GameErrorPreviousArtfulLiarDoesntMatchCurrent,
+  GameErrorPreviousMovieDoesntMatchCurrent,
   MAX_SCORE,
   Player
 } from './game'
@@ -23,6 +25,8 @@ const mid1 = 1
 const pid1 = 1
 const mid2 = 2
 const pid2 = 2
+const mid3 = 3
+const pid3 = 3
 
 afterAll(async () => {
   await db.ref("games").set({})
@@ -326,8 +330,63 @@ describe("Game#playerMove", () => {
     })).rejects.toThrow(GameErrorMovieOrArtfulLiarAlreadyChosen)
   })
 
-  test.todo("player can't choose an artful liar from a movie that wasn't the last movie chosen")
+  test("player can't choose an artful liar from a movie that wasn't the last movie chosen", async () => {
+    await game.get(game.gid!)
 
-    // TODO: try and include 5-6 or so choices to test sequencing
-  test.todo("player can't choose a movie from an artful liar that wasn't from the last artful liar chosen")
+    await game.playerMove(uuid, true, {
+      pid: pid2,
+      toType: 'pid',
+    })
+
+    await game.playerMove(uuid2, true, {
+      pid: pid2,
+      mid: mid2,
+      toType: 'mid'
+    })
+
+    await game.playerMove(uuid3, true, {
+      mid: mid2,
+      pid: pid3,
+      toType: 'pid'
+    })
+
+    await game.playerMove(uuid, true, {
+      pid: pid3,
+      mid: mid3,
+      toType: 'mid'
+    })
+
+    await expect(game.playerMove(uuid2, true, {
+      mid: mid1, // should not match last chosen
+      pid: pid1,
+      toType: 'pid',
+    })).rejects.toThrow(GameErrorPreviousArtfulLiarDoesntMatchCurrent)
+  })
+
+  test("player can't choose a movie from an artful liar that wasn't from the last artful liar chosen", async () => {
+    await game.get(game.gid!)
+
+    await game.playerMove(uuid, true, {
+      pid: pid2,
+      toType: 'pid',
+    })
+
+    await game.playerMove(uuid2, true, {
+      pid: pid2,
+      mid: mid2,
+      toType: 'mid'
+    })
+
+    await game.playerMove(uuid3, true, {
+      mid: mid2,
+      pid: pid3,
+      toType: 'pid'
+    })
+
+    await expect(game.playerMove(uuid, true, {
+      pid: pid1,
+      mid: mid3,
+      toType: 'mid'
+    })).rejects.toThrow(GameErrorPreviousMovieDoesntMatchCurrent)
+  })
 })

@@ -159,18 +159,38 @@ export default class Game {
       throw new GameErrorCantMoveWhenNotCurrentPlayer()
     }
 
-    if ((move.toType === 'pid' && Object.keys(this.history).find(
-      (moveKey) => {
-        const historicalMove = this.history[moveKey]
-        return historicalMove.toType === 'pid' && historicalMove.pid === move.pid
+    const lastMove = this.history[
+      Object.keys(this.history)[Object.keys(this.history).length - 1]
+    ]
+
+    if (move.toType === 'pid') {
+      if (Object.keys(this.history).find(
+        (moveKey) => {
+          const historicalMove = this.history[moveKey]
+          return historicalMove.toType === 'pid' && historicalMove.pid === move.pid
+        }
+      )) {
+        throw new GameErrorMovieOrArtfulLiarAlreadyChosen()
       }
-    )) || (move.toType === 'mid' && Object.keys(this.history).find(
-      (moveKey) => {
-        const historicalMove = this.history[moveKey]
-        return historicalMove.toType === 'mid' && historicalMove.mid === move.mid
+
+      if (lastMove && lastMove.mid !== move.mid) {
+        throw new GameErrorPreviousArtfulLiarDoesntMatchCurrent()
       }
-    ))) {
-      throw new GameErrorMovieOrArtfulLiarAlreadyChosen()
+    }
+
+    if (move.toType === 'mid') {
+      if (Object.keys(this.history).find(
+        (moveKey) => {
+          const historicalMove = this.history[moveKey]
+          return historicalMove.toType === 'mid' && historicalMove.mid === move.mid
+        }
+      )) {
+        throw new GameErrorMovieOrArtfulLiarAlreadyChosen()
+      }
+
+      if (lastMove && lastMove.pid !== move.pid) {
+        throw new GameErrorPreviousMovieDoesntMatchCurrent()
+      }
     }
   }
 }
@@ -193,6 +213,20 @@ export class GameErrorMovieOrArtfulLiarAlreadyChosen extends Error {
   constructor() {
     super("This movie or artful liar has already been chosen")
     this.name = GameErrorMovieOrArtfulLiarAlreadyChosen.name
+  }
+}
+
+export class GameErrorPreviousArtfulLiarDoesntMatchCurrent extends Error {
+  constructor() {
+    super("Passed in artful liar doesn't match previous one")
+    this.name = GameErrorPreviousArtfulLiarDoesntMatchCurrent.name
+  }
+}
+
+export class GameErrorPreviousMovieDoesntMatchCurrent extends Error {
+  constructor() {
+    super("Passed in movie doesn't match previous one")
+    this.name = GameErrorPreviousMovieDoesntMatchCurrent.name
   }
 }
 
