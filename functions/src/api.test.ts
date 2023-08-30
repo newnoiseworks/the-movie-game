@@ -1,11 +1,17 @@
 import * as path from 'path'
-import axios, { AxiosError, AxiosResponse } from 'axios'
+import axios, { AxiosRequestConfig, AxiosResponse } from 'axios'
 import http from 'http'
 import nock from 'nock'
 
 import admin from './fbase'
 import api from './api'
-import Game, { Player, MAX_SCORE, GameErrorMovieOrArtfulLiarAlreadyChosen } from './game'
+import Game, {
+  Player,
+  MAX_SCORE,
+  GameErrorMovieOrArtfulLiarAlreadyChosen,
+  GameErrorPreviousMovieDoesntMatchCurrent,
+  GameErrorPreviousArtfulLiarDoesntMatchCurrent
+} from './game'
 
 // TODO: Get nock back working, the below technically bypasses it
 const NOCK_BACK_MODE = "wild"
@@ -351,6 +357,8 @@ describe("/playerGameChoice", () => {
 
   const filmGaslightId = 55207 // Reference!
   const filmCasablancaId = 289
+  const filmMurderExpressId = 392044
+  const humphreyBogartId = 4110
   const ingridBergmanId = 4111
 
   beforeEach(async () => {
@@ -548,8 +556,66 @@ describe("/playerGameChoice", () => {
     expect(response.status).toBe(200)
   })
 
-  test.todo("player can't choose an artful liar from a movie that wasn't the last movie chosen")
+  test("player can't choose an artful liar from a movie that wasn't the last movie chosen", async () => {
+    await axios.post(`/playerGameChoice`, {
+      mid: filmMurderExpressId,
+      token: uuidToToken[uuidOne],
+      toType: 'mid',
+      gid
+    })
 
-  test.todo("player can't choose a movie from an artful liar that wasn't from the last artful liar chosen")
+    await axios.post(`/playerGameChoice`, {
+      pid: ingridBergmanId,
+      mid: filmMurderExpressId,
+      token: uuidToToken[uuidTwo],
+      toType: 'pid',
+      gid
+    })
+
+    // technically Bogart was in Casablanca, which is a match... but,
+    // the last move was the film Gaslight, so this should result in a 403
+    // with a relevant error message in the reponse
+    const response = await axios.post('/playerGameChoice', {
+      pid: humphreyBogartId,
+      mid: filmCasablancaId,
+      token: uuidToToken[uuidOne],
+      toType: 'mid',
+      gid
+    }, allow400sConfig)
+
+    expect(response.status).toBe(403)
+    expect(response.data).toContain(new GameErrorPreviousMovieDoesntMatchCurrent().message)
+  })
+
+  test("player can't choose a movie from an artful liar that wasn't from the last artful liar chosen", async () => {
+    await axios.post(`/playerGameChoice`, {
+      pid: ingridBergmanId,
+      token: uuidToToken[uuidOne],
+      toType: 'pid',
+      gid
+    })
+
+    await axios.post('/playerGameChoice', {
+      pid: ingridBergmanId,
+      mid: filmGaslightId,
+      token: uuidToToken[uuidTwo],
+      toType: 'mid',
+      gid
+    })
+
+    // technically Bogart was in Casablanca, which is a match... but,
+    // the last move was the artful liar Ingrid Bergman, so this should result in a 403
+    // with a relevant error message in the reponse
+    const response = await axios.post('/playerGameChoice', {
+      pid: humphreyBogartId,
+      mid: filmCasablancaId,
+      token: uuidToToken[uuidOne],
+      toType: 'pid',
+      gid
+    }, allow400sConfig)
+
+    expect(response.status).toBe(403)
+    expect(response.data).toContain(new GameErrorPreviousArtfulLiarDoesntMatchCurrent().message)
+  })
 })
 
