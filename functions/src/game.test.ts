@@ -325,4 +325,9 @@ describe("Game#playerMove", () => {
       toType: 'mid',
     })).rejects.toThrow(GameErrorMovieOrArtfulLiarAlreadyChosen)
   })
+
+  test.todo("player can't choose an artful liar from a movie that wasn't the last movie chosen")
+
+    // TODO: try and include 5-6 or so choices to test sequencing
+  test.todo("player can't choose a movie from an artful liar that wasn't from the last artful liar chosen")
 })

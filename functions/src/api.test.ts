@@ -562,5 +562,9 @@ describe("/playerGameChoice", () => {
 
     expect(response.status).toBe(200)
   })
+
+  test.todo("player can't choose an artful liar from a movie that wasn't the last movie chosen")
+
+  test.todo("player can't choose a movie from an artful liar that wasn't from the last artful liar chosen")
 })
 
