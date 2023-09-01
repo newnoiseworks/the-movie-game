@@ -414,7 +414,7 @@ describe("Game#playerMove", () => {
 
     await game.playerMove(uuid3, false, {
       mid: mid2,
-      pid: pid2, // this artful liar has already been chosen in the first step
+      pid: pid2,
       toType: 'pid'
     })
 
