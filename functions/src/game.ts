@@ -124,9 +124,11 @@ export default class Game {
     const playerKey = this.sortedKeys(this.players).find((key) => this.players[key].uuid === uuid)!
     const player = this.players[playerKey]
 
-    this.validatePlayerMove(player, move)
+    this.validatePlayer(player)
 
-    if (!isCorrect) {
+    if (isCorrect) {
+      this.validateMove(move)
+    } else {
       await this.db.ref(`games/${this.gid}/players/${playerKey}/score`).set((player.score || 0) + 1)
     }
 
@@ -147,10 +149,7 @@ export default class Game {
     this.currentPlayer = nextPlayerUuid
   }
 
-  validatePlayerMove(
-    player: Player,
-    move: GameMove
-  ) {
+  validatePlayer(player: Player) {
     if (player.score === MAX_SCORE) {
       throw new GameErrorCantMoveWithMaxScore()
     }
@@ -158,7 +157,9 @@ export default class Game {
     if (player.uuid != this.currentPlayer) {
       throw new GameErrorCantMoveWhenNotCurrentPlayer()
     }
+  }
 
+  validateMove(move: GameMove) {
     const lastMove = this.history[
       this.sortedKeys(this.history)[this.sortedKeys(this.history).length - 1]
     ]

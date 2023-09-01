@@ -389,4 +389,43 @@ describe("Game#playerMove", () => {
       toType: 'mid'
     })).rejects.toThrow(GameErrorPreviousMovieDoesntMatchCurrent)
   })
+
+  test("player cannot choose an artful liar incorrectly that has already been picked, and the incorrect choice should take precedence such that the score and current player is adjusted", async () => {
+
+    let gameObj = (await db.ref(`games/${gameKey}`).once("value")).val() as Game
+    let thirdUser = gameObj.players[Object.keys(gameObj.players)[2]]!
+    const firstCurrentPlayer = gameObj.currentPlayer
+
+    expect(thirdUser.score).toEqual(0)
+    expect(firstCurrentPlayer).toBe(uuid)
+
+    await game.get(game.gid!)
+
+    await game.playerMove(uuid, true, {
+      pid: pid2,
+      toType: 'pid',
+    })
+
+    await game.playerMove(uuid2, true, {
+      pid: pid2,
+      mid: mid2,
+      toType: 'mid'
+    })
+
+    await game.playerMove(uuid3, false, {
+      mid: mid2,
+      pid: pid2, // this artful liar has already been chosen in the first step
+      toType: 'pid'
+    })
+
+    gameObj = (await db.ref(`games/${gameKey}`).once("value")).val()
+    thirdUser = gameObj.players[Object.keys(gameObj.players)[2]]!
+    const secondCurrentPlayer = gameObj.currentPlayer
+
+    expect(thirdUser.score).toEqual(1)
+    expect(secondCurrentPlayer).toBe(firstCurrentPlayer)
+    expect(secondCurrentPlayer).toBe(uuid)
+    expect(game.currentPlayer).toBe(uuid)
+  })
+
 })

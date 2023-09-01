@@ -355,7 +355,7 @@ describe("/playerGameChoice", () => {
   const menaSuvariId = 8211
   const taraReidId = 1234
 
-  const filmGaslightId = 55207 // Reference!
+  const filmGaslightId = 13528 // Correct Reference!
   const filmCasablancaId = 289
   const filmMurderExpressId = 392044
   const humphreyBogartId = 4110

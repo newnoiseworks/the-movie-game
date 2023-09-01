@@ -122,6 +122,7 @@ app.post('/playerGameChoice', apiAuth, async (request, response) => {
   const uuid = request.idToken!.uid
   const { mid, pid } = request.body
 
+  // TODO: Consider calling game.validatePlayer() and include the below there, and call that before isPersonInMovie... would consolidate things
   if (!Object.keys(game.players).find((playerKey) => game.players[playerKey].uuid === uuid)) {
     return respond403(response, "Player not joined onto this game")
   }
