@@ -1,8 +1,7 @@
 import React from 'react'
-import { Container, Text } from '@chakra-ui/react'
+import { Button, Container, Text } from '@chakra-ui/react'
 import { useNavigate } from 'react-router-dom'
 
-import { Button } from '../Button'
 import { createGame } from '../api'
 
 const CreateOrJoin: React.FC = () => {
@@ -31,6 +30,7 @@ const CreateOrJoin: React.FC = () => {
         fontSize="xxx-large"
         mb={5}
         mt={5}
+        h="33vh"
       >
         The Movie Game
       </Text>

@@ -9,7 +9,15 @@ import Game from './Game/Game'
 
 import { anonymousSignIn, auth } from './firebase'
 
-const theme = extendTheme({})
+const theme = extendTheme({
+  components: {
+    Button: {
+      defaultProps: {
+        colorScheme: "purple"
+      }
+    }
+  }
+})
 
 const router = createBrowserRouter([
   {
@@ -56,7 +64,10 @@ function App() {
             <RouterProvider router={router} />
           </Container>
           <Box
-           css={{ position: 'sticky', bottom: 0 }}
+           css={{
+             position: 'sticky',
+             bottom: 0
+           }}
           >
             <Footer />
           </Box>
