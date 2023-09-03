@@ -1,5 +1,3 @@
-'use client'
-
 import {
   Box,
   chakra,
@@ -70,9 +68,6 @@ export default function SmallCentered() {
             About
           </Box>
           <Box as="a" href={'#'}>
-            Blog
-          </Box>
-          <Box as="a" href={'#'}>
             Contact
           </Box>
         </Stack>
@@ -90,7 +85,7 @@ export default function SmallCentered() {
           spacing={4}
           justify={{ base: 'center', md: 'space-between' }}
           align={{ base: 'center', md: 'center' }}>
-          <Text>© 2022 Chakra Templates. All rights reserved</Text>
+          <Text>© 2023 NoiseAndTheCKC</Text>
           <Stack direction={'row'} spacing={6}>
             <SocialButton label={'Twitter'} href={'#'}>
               <FaTwitter />
