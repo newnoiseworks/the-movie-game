@@ -1,7 +1,8 @@
 import React from 'react'
-import { Button, Container, Link, TextField, Typography } from '@mui/material'
+import { Container, Text } from '@chakra-ui/react'
 import { useNavigate } from 'react-router-dom'
 
+import { Button } from '../Button'
 import { createGame } from '../api'
 
 const CreateOrJoin: React.FC = () => {
@@ -21,31 +22,19 @@ const CreateOrJoin: React.FC = () => {
   }
 
   return (
-    <Container sx={{ 
-      textAlign: "center",
-      mt: 4
-    }}>
-      <Typography
-        variant="h1"
-        sx={{
-          mb: 2
-        }}
-      >The Movie Game</Typography>
-      <Typography component="div">
-        <Link onClick={() => createGameAndChangePage()}>Create a game</Link> 
-        {` `}
-        <label htmlFor="game-code">
-          or enter it's code 
-        </label>
-        {` `}
-        <TextField
-          id="game-code"
-          variant="standard"
-          placeholder="G@M3C0D3"
-        />
-        {` `}
-        <Button type="button" size="large">Join</Button>
-      </Typography>
+    <
+      Container
+      textAlign={'center'}
+    >
+      <Text
+        as="h1"
+        fontSize="xxx-large"
+        mb={5}
+        mt={5}
+      >
+        The Movie Game
+      </Text>
+      <Button onClick={() => createGameAndChangePage()}>Create a Game</Button>
     </Container>
   )
 }

@@ -1,23 +1,10 @@
-import React from 'react';
-import './button.css';
+import { Button as ChakraButton, ButtonProps as ChakraButtonProps } from '@chakra-ui/react'
 
-interface ButtonProps {
-  /**
-   * Is this the principal call to action on the page?
-   */
-  primary?: boolean;
-  /**
-   * What background color to use
-   */
-  backgroundColor?: string;
-  /**
-   * How large should the button be?
-   */
-  size?: 'small' | 'medium' | 'large';
+interface ButtonProps extends ChakraButtonProps {
   /**
    * Button contents
    */
-  label: string;
+  label?: string;
   /**
    * Optional click handler
    */
@@ -28,21 +15,17 @@ interface ButtonProps {
  * Primary UI component for user interaction
  */
 export const Button = ({
-  primary = false,
-  size = 'medium',
-  backgroundColor,
   label,
+  children,
   ...props
 }: ButtonProps) => {
-  const mode = primary ? 'storybook-button--primary' : 'storybook-button--secondary';
   return (
-    <button
+    <ChakraButton
       type="button"
-      className={['storybook-button', `storybook-button--${size}`, mode].join(' ')}
-      style={{ backgroundColor }}
+      colorScheme="purple"
       {...props}
     >
-      {label}
-    </button>
+      {label || children}
+    </ChakraButton>
   );
 };

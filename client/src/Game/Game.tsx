@@ -1,5 +1,5 @@
 import React from 'react'
-import { Container, Typography } from '@mui/material'
+import { Container, Text } from '@chakra-ui/react'
 import { useParams } from 'react-router-dom'
 
 const CreateOrJoin: React.FC = () => {
@@ -15,22 +15,22 @@ const CreateOrJoin: React.FC = () => {
       textAlign: "center",
       mt: 4
     }}>
-      <Typography
+      <Text
         variant="h5"
         sx={{
           mb: 2
         }}
       >
         Now Playing: <em>The Movie Game</em> - #{gameId}
-      </Typography>
-      <Typography
+      </Text>
+      <Text
         variant="h2"
         sx={{
           mb: 2
         }}
       >
     {movieOrPerson.charAt(0).toUpperCase() + movieOrPerson.slice(1)}: <em>{currentMovieOrPersonName}</em>
-      </Typography>
+      </Text>
     </Container>
   )
 }

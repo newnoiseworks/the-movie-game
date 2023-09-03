@@ -24,7 +24,6 @@ type Story = StoryObj<typeof Button>;
 // More on writing stories with args: https://storybook.js.org/docs/react/writing-stories/args
 export const Primary: Story = {
   args: {
-    primary: true,
     label: 'Button',
   },
 };
@@ -37,22 +36,20 @@ export const Secondary: Story = {
 
 export const Large: Story = {
   args: {
-    size: 'large',
+    size: 'lg',
     label: 'Button',
   },
 };
 
 export const Small: Story = {
   args: {
-    size: 'small',
+    size: 'sm',
     label: 'Button',
   },
 };
 
 export const Warning: Story = {
   args: {
-    primary: true,
     label: 'Delete now',
-    backgroundColor: 'red',
   },
 };
