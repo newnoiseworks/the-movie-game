@@ -4,6 +4,14 @@ import ReactDOM from 'react-dom/client'
 import App from './App'
 import './firebase.ts'
 
+const warningElems = document.getElementsByClassName("firebase-emulator-warning")
+
+if (process.env.NODE_ENV === 'development' && warningElems.length > 0) {
+  setTimeout(() => {
+    warningElems[0].remove()
+  }, 1500)
+}
+
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
