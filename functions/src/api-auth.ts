@@ -16,7 +16,10 @@ export default async function(request: Request, response: Response, next: NextFu
   let decodedToken: DecodedIdToken
 
   try {
-    decodedToken = await auth.verifyIdToken(request.body.token)
+    // TODO: Should just read from headers. Adjust tests when ready, client should use headers
+
+    const token = request.body.token != "" ? request.body.token : request.headers.authorization!.replace("Bearer ", "")
+    decodedToken = await auth.verifyIdToken(token)
   } catch (err) {
     if (process.env.NODE_ENV !== 'test') {
       console.error(err)
