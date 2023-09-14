@@ -2,13 +2,13 @@ import axios from 'axios'
 
 import { auth } from './firebase'
 
-async function createGame(name: string) {
+async function createGame(name: string, gameName?: string) {
   const headers = await getAuthHeaders()
 
   const response = await axios
     .post(
       `${process.env.REACT_APP_FUNCTIONS_URL}/createGame`,
-      { name },
+      { name, gameName },
       { headers }
     )
 
@@ -26,3 +26,4 @@ async function getAuthHeaders() {
 export {
   createGame
 }
+
