@@ -66,6 +66,22 @@ const createUser = async (uid: string, idx: number) => {
   }
 }
 
+function getAuthHeaders(token: string) {
+  return {
+    headers: {
+      'Authorization': `Bearer ${token}`
+    }
+  }
+}
+
+const getAuthHeaderFor = (uuid: string | number) => {
+  if (typeof uuid === 'number') {
+    uuid = uuids[uuid]
+  }
+
+  return getAuthHeaders(uuidToToken[uuid])
+}
+
 beforeAll(async () => {
   await Promise.all(uuids.map((uid, idx) => createUser(uid, idx)))
 
@@ -181,10 +197,9 @@ describe("/createGame", () => {
   test("creates a game and stores in firebase DB", async () => {
     const gameName = "The moviest game"
     const response = await axios.post(`/createGame`, {
-      token: uuidToToken[uuids[0]],
       name: "test-name",
       gameName
-    })
+    }, getAuthHeaderFor(0))
 
     const gameKey = response.data
 
@@ -200,9 +215,8 @@ describe("/createGame", () => {
     const gameName = "test-name's game"
 
     const response = await axios.post(`/createGame`, {
-      token: uuidToToken[uuids[0]],
       name: "test-name",
-    })
+    }, getAuthHeaderFor(0))
 
     const gameKey = response.data
 
@@ -234,8 +248,7 @@ describe("/joinGame", () => {
     const response = await axios.post(`/joinGame`, {
       name: nameTwo,
       gid,
-      token: uuidToToken[uuidTwo]
-    })
+    }, getAuthHeaderFor(1))
 
     const gameRefFromServer = (await db.ref(`games/${gid}`).once('value')).val() as Game
 
@@ -253,8 +266,7 @@ describe("/joinGame", () => {
       uuid: uuidOne,
       name,
       gid,
-      token: uuidToToken[uuidOne]
-    }, allow400sConfig)
+    }, { ...allow400sConfig, ...getAuthHeaderFor(0) })
 
     const gameRefFromServer = (await db.ref(`games/${gid}`).once('value')).val() as Game
 
@@ -276,8 +288,7 @@ describe("/joinGame", () => {
       uuid: uuidThree,
       name: nameThree,
       gid,
-      token: uuidToToken[uuidThree]
-    }, allow400sConfig)
+    }, { ...allow400sConfig, ...getAuthHeaderFor(2) })
 
     const gameRefFromServer = (await db.ref(`games/${gid}`).once('value')).val() as Game
 
@@ -313,10 +324,9 @@ describe("/readyToPlay", () => {
     expect(firstPlayer.ready).toBeFalsy()
 
     await axios.post(`/readyToPlay`, {
-      token: uuidToToken[uuids[0]],
       ready: true,
       gid
-    })
+    }, getAuthHeaderFor(0))
 
     gameRefFromServer = (await db.ref(`games/${gid}`).once('value')).val() as Game
 
@@ -335,10 +345,9 @@ describe("/readyToPlay", () => {
     expect(firstPlayer.ready).toBeTruthy()
 
     await axios.post(`/readyToPlay`, {
-      token: uuidToToken[uuids[0]],
       ready: false,
       gid
-    })
+    }, getAuthHeaderFor(0))
 
     gameRefFromServer = (await db.ref(`games/${gid}`).once('value')).val() as Game
 
@@ -385,9 +394,8 @@ describe("/playerGameChoice", () => {
     const response = await axios.post(`/playerGameChoice`, {
       mid: filmLoserId,
       pid: menaSuvariId,
-      token: uuidToToken[uuids[2]],
       gid
-    }, allow400sConfig)
+    }, { ...allow400sConfig, ...getAuthHeaderFor(2) })
 
     expect(response.status).toBe(403)
   })
@@ -402,10 +410,9 @@ describe("/playerGameChoice", () => {
     await axios.post(`/playerGameChoice`, {
       mid: filmLoserId,
       pid: menaSuvariId,
-      token: uuidToToken[uuids[0]],
       toType: 'pid',
       gid
-    })
+    }, getAuthHeaderFor(0))
 
     gameRefFromServer = (await db.ref(`games/${gid}`).once('value')).val() as Game
     firstPlayer = gameRefFromServer.players[Object.keys(gameRefFromServer.players)[0]] as Player
@@ -424,10 +431,9 @@ describe("/playerGameChoice", () => {
     await axios.post(`/playerGameChoice`, {
       mid: filmLoserId,
       pid: taraReidId, // FYI Tara Reid is NOT in the film "Loser"
-      token: uuidToToken[uuids[0]],
       toType: 'pid',
       gid
-    })
+    }, getAuthHeaderFor(0))
 
     gameRefFromServer = (await db.ref(`games/${gid}`).once('value')).val() as Game
     firstPlayer = gameRefFromServer.players[Object.keys(gameRefFromServer.players)[0]] as Player
@@ -447,9 +453,8 @@ describe("/playerGameChoice", () => {
     const response = await axios.post(`/playerGameChoice`, {
       mid: filmLoserId,
       pid: menaSuvariId,
-      token: uuidToToken[uuidOne],
       gid
-    }, allow400sConfig)
+    }, { ...allow400sConfig, ...getAuthHeaderFor(0) })
 
     expect(response.status).toBe(403)
   })
@@ -457,18 +462,16 @@ describe("/playerGameChoice", () => {
   test("player can choose artful liar Mena Suvari from the movie Loser if that was the last movie picked", async () => {
     await axios.post(`/playerGameChoice`, {
       mid: filmLoserId,
-      token: uuidToToken[uuidOne],
       toType: 'mid',
       gid
-    })
+    }, getAuthHeaderFor(0))
 
     const response = await axios.post(`/playerGameChoice`, {
       mid: filmLoserId,
       pid: menaSuvariId,
-      token: uuidToToken[uuidTwo],
       toType: 'pid',
       gid
-    })
+    }, getAuthHeaderFor(1))
 
     expect(response.status).toBe(200)
   })
@@ -476,26 +479,23 @@ describe("/playerGameChoice", () => {
   test("player cannot choose an artful liar that has already been picked", async () => {
     await axios.post(`/playerGameChoice`, {
       pid: menaSuvariId,
-      token: uuidToToken[uuidOne],
       toType: 'pid',
       gid
-    })
+    }, getAuthHeaderFor(0))
 
     await axios.post(`/playerGameChoice`, {
       pid: menaSuvariId,
       mid: filmLoserId,
-      token: uuidToToken[uuidTwo],
       toType: 'mid',
       gid
-    })
+    }, getAuthHeaderFor(1))
 
     const response = await axios.post('/playerGameChoice', {
       mid: filmLoserId,
       pid: menaSuvariId,
-      token: uuidToToken[uuidOne],
       toType: 'pid',
       gid
-    }, allow400sConfig)
+    }, { ...allow400sConfig, ...getAuthHeaderFor(0) })
 
     expect(response.status).toBe(403)
     expect(response.data).toBe(new GameErrorMovieOrArtfulLiarAlreadyChosen().message)
@@ -504,26 +504,23 @@ describe("/playerGameChoice", () => {
   test("player cannot choose a movie that has already been picked", async () => {
     await axios.post(`/playerGameChoice`, {
       mid: filmGaslightId,
-      token: uuidToToken[uuidOne],
       toType: 'mid',
       gid
-    })
+    }, getAuthHeaderFor(0))
 
     await axios.post(`/playerGameChoice`, {
       pid: ingridBergmanId,
       mid: filmGaslightId,
-      token: uuidToToken[uuidTwo],
       toType: 'pid',
       gid
-    })
+    }, getAuthHeaderFor(1))
 
     const response = await axios.post('/playerGameChoice', {
       pid: ingridBergmanId,
       mid: filmGaslightId,
-      token: uuidToToken[uuidOne],
       toType: 'mid',
       gid
-    }, allow400sConfig)
+    }, { ...allow400sConfig, ...getAuthHeaderFor(0) })
 
     expect(response.status).toBe(403)
     expect(response.data).toBe(new GameErrorMovieOrArtfulLiarAlreadyChosen().message)
@@ -532,26 +529,23 @@ describe("/playerGameChoice", () => {
   test("player can choose a movie Ingrid Bergman starred in if Ms. Bergman was the last artful liar picked, and the movie hasn't already been picked", async () => {
     await axios.post(`/playerGameChoice`, {
       mid: filmCasablancaId,
-      token: uuidToToken[uuidOne],
       toType: 'mid',
       gid
-    })
+    }, getAuthHeaderFor(0))
 
     await axios.post(`/playerGameChoice`, {
       pid: ingridBergmanId,
       mid: filmCasablancaId,
-      token: uuidToToken[uuidTwo],
       toType: 'pid',
       gid
-    })
+    }, getAuthHeaderFor(1))
 
     const response = await axios.post('/playerGameChoice', {
       pid: ingridBergmanId,
       mid: filmGaslightId,
-      token: uuidToToken[uuidOne],
       toType: 'mid',
       gid
-    })
+    }, getAuthHeaderFor(0))
 
     expect(response.status).toBe(200)
   })
@@ -559,18 +553,16 @@ describe("/playerGameChoice", () => {
   test("player can't choose an artful liar from a movie that wasn't the last movie chosen", async () => {
     await axios.post(`/playerGameChoice`, {
       mid: filmMurderExpressId,
-      token: uuidToToken[uuidOne],
       toType: 'mid',
       gid
-    })
+    }, getAuthHeaderFor(0))
 
     await axios.post(`/playerGameChoice`, {
       pid: ingridBergmanId,
       mid: filmMurderExpressId,
-      token: uuidToToken[uuidTwo],
       toType: 'pid',
       gid
-    })
+    }, getAuthHeaderFor(1))
 
     // technically Bogart was in Casablanca, which is a match... but,
     // the last move was the film Gaslight, so this should result in a 403
@@ -578,10 +570,9 @@ describe("/playerGameChoice", () => {
     const response = await axios.post('/playerGameChoice', {
       pid: humphreyBogartId,
       mid: filmCasablancaId,
-      token: uuidToToken[uuidOne],
       toType: 'mid',
       gid
-    }, allow400sConfig)
+    }, { ...allow400sConfig, ...getAuthHeaderFor(0) })
 
     expect(response.status).toBe(403)
     expect(response.data).toContain(new GameErrorPreviousMovieDoesntMatchCurrent().message)
@@ -590,18 +581,16 @@ describe("/playerGameChoice", () => {
   test("player can't choose a movie from an artful liar that wasn't from the last artful liar chosen", async () => {
     await axios.post(`/playerGameChoice`, {
       pid: ingridBergmanId,
-      token: uuidToToken[uuidOne],
       toType: 'pid',
       gid
-    })
+    }, getAuthHeaderFor(0))
 
     await axios.post('/playerGameChoice', {
       pid: ingridBergmanId,
       mid: filmGaslightId,
-      token: uuidToToken[uuidTwo],
       toType: 'mid',
       gid
-    })
+    }, getAuthHeaderFor(1))
 
     // technically Bogart was in Casablanca, which is a match... but,
     // the last move was the artful liar Ingrid Bergman, so this should result in a 403
@@ -609,10 +598,9 @@ describe("/playerGameChoice", () => {
     const response = await axios.post('/playerGameChoice', {
       pid: humphreyBogartId,
       mid: filmCasablancaId,
-      token: uuidToToken[uuidOne],
       toType: 'pid',
       gid
-    }, allow400sConfig)
+    }, { ...allow400sConfig, ...getAuthHeaderFor(0) })
 
     expect(response.status).toBe(403)
     expect(response.data).toContain(new GameErrorPreviousArtfulLiarDoesntMatchCurrent().message)
