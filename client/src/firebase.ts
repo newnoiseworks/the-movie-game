@@ -1,5 +1,6 @@
 import { initializeApp } from "firebase/app"
 import { getAuth, connectAuthEmulator, signInAnonymously } from "firebase/auth"
+import { getDatabase, ref, onValue } from "firebase/database"
 
 const firebaseConfig = {
   apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
@@ -13,8 +14,9 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig)
 const auth = getAuth(app)
+const db = getDatabase(app)
 
-const anonymousSignIn = ((cb?: Function) => {
+function anonymousSignIn(cb?: Function) {
   signInAnonymously(auth)
   .then(() => {
     console.log("Signing in user anonymously")
@@ -26,7 +28,11 @@ const anonymousSignIn = ((cb?: Function) => {
   .catch((err) => {
     throw err
   })
-})
+}
+
+function getFromDB(query: string) {
+  return ref(db, query)
+}
 
 if (process.env.NODE_ENV === "development") {
   connectAuthEmulator(
@@ -38,5 +44,10 @@ if (process.env.NODE_ENV === "development") {
 export {
   auth,
   anonymousSignIn,
-  app
+  app,
+  db,
+  ref,
+  getFromDB,
+  onValue
 }
+
