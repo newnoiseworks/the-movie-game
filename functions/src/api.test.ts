@@ -183,6 +183,7 @@ describe("/getPerson", () => {
   })
 })
 
+
 describe("/createGame", () => {
   beforeEach(async () => {
     nockDone = (await nock.back(`createGame.json`, NOCK_BACK_OPTIONS)).nockDone
@@ -223,6 +224,58 @@ describe("/createGame", () => {
     const gameRef = (await db.ref(`games/${gameKey}`).once("value")).val()
 
     expect(gameRef.name).toBe(gameName)
+  })
+})
+
+describe("/gameDetails", () => {
+  let gid: string | null
+
+  beforeEach(async () => {
+    nockDone = (await nock.back(`joinGame.json`, NOCK_BACK_OPTIONS)).nockDone
+
+    gid = await new Game(db).create({ uuid: uuidOne, name })
+  })
+
+  test("can't get a game without authentication", async () => {
+    const response = await axios.post(`/joinGame`, {
+      name: "test-user-two",
+      gid
+    }, allow400sConfig)
+
+    expect(response.status).toBe(401)
+  })
+
+  test("404s on blank gid", async () => {
+    const response = await axios.get(
+      `/gameDetails`,
+      { ...allow400sConfig, ...getAuthHeaderFor(1) }
+    )
+
+    expect(response.status).toBe(404)
+  })
+
+  test("404s on non existent gid", async () => {
+    const response = await axios.get(
+      `/gameDetails?gid=gibberish`,
+      { ...allow400sConfig, ...getAuthHeaderFor(1) }
+    )
+
+    expect(response.status).toBe(404)
+  })
+
+  test("gets game details given a gid", async () => {
+    const response = await axios.get(
+      `/gameDetails?gid=${gid}`,
+      getAuthHeaderFor(1)
+    )
+
+    const gameRefFromServer = (await db.ref(`games/${gid}`).once('value')).val() as Game
+
+    expect(response.status).toBe(200)
+    expect(response.data.players).toStrictEqual(gameRefFromServer.players)
+    expect(response.data.name).toBe(gameRefFromServer.name)
+    expect(response.data.currentPlayer).toBe(gameRefFromServer.currentPlayer)
+    expect(response.data.gid).toBe(gid)
   })
 })
 

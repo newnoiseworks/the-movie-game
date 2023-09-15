@@ -58,9 +58,15 @@ export default class Game {
   }
 
   async get(gid: string) {
+    let gameRef
     this.gid = gid
 
-    const gameRef = (await this.db.ref(`games/${gid}`).once("value")).val()
+    gameRef = (await this.db.ref(`games/${gid}`).once("value")).val()
+
+    if (!gameRef) {
+      this.gid = undefined
+      return this
+    }
 
     this.currentPlayer = gameRef.currentPlayer
     this.players = gameRef.players

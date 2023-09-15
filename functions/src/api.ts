@@ -78,6 +78,35 @@ app.post('/createGame', apiAuth, async (request, response) => {
   response.send(gameKey)
 })
 
+
+
+app.get('/gameDetails', apiAuth, async(request, response) => {
+  const db = admin.database()
+  const gameId = request.query.gid as string
+
+  if (!gameId) {
+    return respond404(response)
+  }
+
+  try {
+    const game = await new Game(db).get(gameId)
+
+    if (!game.gid) {
+      return respond404(response)
+    }
+
+    response.send({
+      gid: gameId,
+      players: game.players,
+      currentPlayer: game.currentPlayer,
+      name: game.name
+    })
+  } catch(err) {
+    respond404(response)
+    throw err
+  }
+})
+
 // Join game call
 app.post('/joinGame', apiAuth, async (request, response) => {
   const db = admin.database()
@@ -169,6 +198,11 @@ async function isPersonInMovie(movieId: number, personId: number) {
 function respond403(response: express.Response, message: string) {
   response.statusCode = 403
   response.send(message)
+}
+
+function respond404(response: express.Response) {
+  response.statusCode = 404
+  response.send()
 }
 
 export default app
