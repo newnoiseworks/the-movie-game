@@ -1,27 +1,26 @@
-import React, { useState, useEffect } from 'react'
+import React from 'react'
 import { Container, Text } from '@chakra-ui/react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { useList, useObjectVal } from 'react-firebase-hooks/database'
 
-import { getFromDB, onValue } from '../firebase'
+import { getFromDB } from '../firebase'
 
 import LobbyPlayerList, { LobbyPlayer } from './LobbyPlayerList'
 
 const CreateOrJoin: React.FC = () => {
-  // const [isSignedIn, setIsSignedIn] = React.useState(!!auth.currentUser)
   const navigate = useNavigate()
   const { gameId } = useParams()
 
-  const [ players, setPlayers ] = useState<LobbyPlayer[]>([])
+  const [ playerSnaps, playerLoading, playerError ] = useList(getFromDB(`games/${gameId}/players`))
+  const [ gameName, gameNameLoading, gameNameError ] = useObjectVal<string>(getFromDB(`games/${gameId}/name`))
 
-  useEffect(() => {
-    const gameRef = getFromDB(`games/${gameId}/players`)
+  const players: LobbyPlayer[] = []
 
-    onValue(gameRef, (snapshot) => {
-      const playersObj = snapshot.val()
-      const players = Object.keys(playersObj).map((key) => playersObj[key])
-      setPlayers(players)
+  if (!playerLoading && playerSnaps) {
+    playerSnaps.forEach((snap) => {
+      players.push({ key: snap.key, ...snap.val() })
     })
-  }, [gameId])
+  }
 
   if (!gameId) {
     navigate('/')
@@ -29,18 +28,32 @@ const CreateOrJoin: React.FC = () => {
   }
 
   return (
-    <Container sx={{
-      mt: 4
-    }}>
-      <Text
-        variant="h1"
-        sx={{
-          mb: 2
-        }}
-      >
-        Now Playing: <em>The Movie Game</em> - #{gameId}
-      </Text>
-      <LobbyPlayerList players={players} gameId={gameId} />
+    <Container>
+      <Container sx={{
+        mb: 6
+      }}>
+        {gameNameLoading && "Loading game..."}
+        {gameNameError && `Error loading game... ${gameNameError}`}
+        <Text
+          variant="h1"
+          fontSize="3xl"
+          fontWeight="bold"
+        >
+          {gameName}
+        </Text>
+        <Text
+          variant="h3"
+          fontSize="sm"
+        >
+          Lobby - The Movie Game
+        </Text>
+      </Container>
+      {playerLoading && "Loading players..."}
+      {playerError && `Error loading players... ${playerError}`}
+      <LobbyPlayerList
+        players={players}
+        gameId={gameId}
+      />
     </Container>
   )
 }

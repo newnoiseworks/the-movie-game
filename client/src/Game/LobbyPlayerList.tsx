@@ -12,14 +12,46 @@ import {
   TableContainer,
 } from '@chakra-ui/react'
 
+import { getUID } from '../api'
+
 export interface LobbyPlayer {
   name: string
   ready?: boolean
+  uuid: string
+  key: string
 }
 
 export interface LobbyPlayerListProps {
   players: LobbyPlayer[]
   gameId: string
+}
+
+const PlayerRow: React.FC<{ player: LobbyPlayer }> = ({
+  player
+}) => {
+  if (player.uuid === getUID()) {
+    return <UserPlayerRow player={player} /> 
+  }
+
+  return <Tr key={player.key}>
+    <Td>
+      {player.name} - <em>{!player.ready && "not "}ready</em>
+    </Td>
+    <Td textAlign="right">
+      ...
+    </Td>
+  </Tr>
+}
+
+const UserPlayerRow: React.FC<{ player: LobbyPlayer }> = ({ player }) => {
+  return <Tr key={player.key}>
+    <Td>
+      {player.name} - <em>{!player.ready && "not "}ready</em>
+    </Td>
+    <Td textAlign="right">
+      switch thing
+    </Td>
+  </Tr>
 }
 
 const LobbyPlayerList: React.FC<LobbyPlayerListProps> = ({
@@ -35,14 +67,9 @@ const LobbyPlayerList: React.FC<LobbyPlayerListProps> = ({
         </Tr>
       </Thead>
       <Tbody>
-        {players.map((player) =>
-          <Tr>
-            <Td>{player.name}</Td>
-            <Td textAlign="right">
-              <em>{!player.ready && "not "}ready</em>
-            </Td>
-          </Tr>
-        )}
+        {players.map((player) => (
+          <PlayerRow player={player} key={player.key} />
+        ))}
       </Tbody>
       <Tfoot>
         <Tr>

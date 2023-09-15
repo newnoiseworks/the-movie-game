@@ -23,7 +23,12 @@ async function getAuthHeaders() {
   }
 }
 
+function getUID() {
+  return auth.currentUser!.uid
+}
+
 export {
-  createGame
+  createGame,
+  getUID
 }
 
