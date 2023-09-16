@@ -15,6 +15,19 @@ async function createGame(name: string, gameName?: string) {
   return response.data
 }
 
+async function joinGame(name: string, gid: string) {
+  const headers = await getAuthHeaders()
+
+  const response = await axios
+    .post(
+      `${process.env.REACT_APP_FUNCTIONS_URL}/joinGame`,
+      { name, gid },
+      { headers }
+    )
+
+  return response.data
+}
+
 async function getAuthHeaders() {
   const token = await auth.currentUser!.getIdToken()
 
@@ -29,6 +42,7 @@ function getUID() {
 
 export {
   createGame,
+  joinGame,
   getUID
 }
 

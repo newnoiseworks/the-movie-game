@@ -47,7 +47,7 @@ const PlayerRow: React.FC<{ player: LobbyPlayer, gameId: string }> = ({ player, 
 const UserPlayerRow: React.FC<{ player: LobbyPlayer, gameId: string }> = ({ player, gameId }) => (
   <Tr key={player.key}>
     <Td>
-      {player.name} - <em>{!player.ready && "not "}ready</em>
+      {player.name} - <em>(you)</em>
     </Td>
     <Td textAlign="right">
       <Switch isChecked={player.ready} onChange={() => {
