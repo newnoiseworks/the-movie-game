@@ -78,8 +78,6 @@ app.post('/createGame', apiAuth, async (request, response) => {
   response.send(gameKey)
 })
 
-
-
 app.get('/gameDetails', apiAuth, async(request, response) => {
   const db = admin.database()
   const gameId = request.query.gid as string
