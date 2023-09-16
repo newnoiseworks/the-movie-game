@@ -1,6 +1,6 @@
 import { initializeApp } from "firebase/app"
 import { getAuth, connectAuthEmulator, signInAnonymously } from "firebase/auth"
-import { getDatabase, ref, onValue } from "firebase/database"
+import { getDatabase, ref, onValue, set, DatabaseReference } from "firebase/database"
 
 const firebaseConfig = {
   apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
@@ -34,6 +34,10 @@ function getFromDB(query: string) {
   return ref(db, query)
 }
 
+function setToDB(query: string, data: Object) {
+  return set(getFromDB(query), data)
+}
+
 if (process.env.NODE_ENV === "development") {
   connectAuthEmulator(
     auth,
@@ -48,6 +52,7 @@ export {
   db,
   ref,
   getFromDB,
+  setToDB,
   onValue
 }
 

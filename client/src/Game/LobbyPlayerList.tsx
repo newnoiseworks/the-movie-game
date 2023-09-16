@@ -1,6 +1,7 @@
 import React from 'react'
 import {
   Link,
+  Switch,
   Table,
   Thead,
   Tbody,
@@ -12,6 +13,7 @@ import {
   TableContainer,
 } from '@chakra-ui/react'
 
+import { setToDB } from '../firebase'
 import { getUID } from '../api'
 
 export interface LobbyPlayer {
@@ -26,36 +28,37 @@ export interface LobbyPlayerListProps {
   gameId: string
 }
 
-const PlayerRow: React.FC<{ player: LobbyPlayer }> = ({
-  player
-}) => {
+const PlayerRow: React.FC<{ player: LobbyPlayer, gameId: string }> = ({ player, gameId }) => {
   if (player.uuid === getUID()) {
-    return <UserPlayerRow player={player} /> 
+    return <UserPlayerRow player={player} gameId={gameId} />
   }
 
   return <Tr key={player.key}>
     <Td>
-      {player.name} - <em>{!player.ready && "not "}ready</em>
+      {player.name}
     </Td>
     <Td textAlign="right">
-      ...
+      <em>{!player.ready && "not "}ready</em>
     </Td>
   </Tr>
 }
 
-const UserPlayerRow: React.FC<{ player: LobbyPlayer }> = ({ player }) => {
-  return <Tr key={player.key}>
+const UserPlayerRow: React.FC<{ player: LobbyPlayer, gameId: string }> = ({ player, gameId }) => (
+  <Tr key={player.key}>
     <Td>
       {player.name} - <em>{!player.ready && "not "}ready</em>
     </Td>
     <Td textAlign="right">
-      switch thing
+      <Switch isChecked={player.ready} onChange={() => {
+        setToDB(`games/${gameId}/players/${player.key}/ready`, !player.ready)
+      }} />
     </Td>
   </Tr>
-}
+)
 
 const LobbyPlayerList: React.FC<LobbyPlayerListProps> = ({
-  players = []
+  players = [],
+  gameId
 }) => {
   return <TableContainer>
     <Table variant="striped" colorScheme="purple">
@@ -68,7 +71,11 @@ const LobbyPlayerList: React.FC<LobbyPlayerListProps> = ({
       </Thead>
       <Tbody>
         {players.map((player) => (
-          <PlayerRow player={player} key={player.key} />
+          <PlayerRow
+            player={player}
+            key={player.key}
+            gameId={gameId}
+          />
         ))}
       </Tbody>
       <Tfoot>
