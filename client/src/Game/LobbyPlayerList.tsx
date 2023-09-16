@@ -26,6 +26,7 @@ export interface LobbyPlayer {
 export interface LobbyPlayerListProps {
   players: LobbyPlayer[]
   gameId: string
+  copyUrlFn: () => void
 }
 
 const PlayerRow: React.FC<{ player: LobbyPlayer, gameId: string }> = ({ player, gameId }) => {
@@ -58,7 +59,8 @@ const UserPlayerRow: React.FC<{ player: LobbyPlayer, gameId: string }> = ({ play
 
 const LobbyPlayerList: React.FC<LobbyPlayerListProps> = ({
   players = [],
-  gameId
+  gameId,
+  copyUrlFn
 }) => {
   return <TableContainer>
     <Table variant="striped" colorScheme="purple">
@@ -81,7 +83,7 @@ const LobbyPlayerList: React.FC<LobbyPlayerListProps> = ({
       <Tfoot>
         <Tr>
           <Td>
-            <Link href="#">(copy share link)</Link>
+            <Link onClick={copyUrlFn}>(copy share link)</Link>
           </Td>
           <Td></Td>
         </Tr>
