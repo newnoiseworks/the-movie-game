@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import {
   Button,
   Container,
@@ -26,30 +26,41 @@ const GameLobby: React.FC = () => {
 
   const [ playerSnaps, playerLoading, playerError ] = useList(getFromDB(`games/${gameId}/players`))
   const [ gameName, gameNameLoading, gameNameError ] = useObjectVal<string>(getFromDB(`games/${gameId}/name`))
+  const [ players, setPlayers ] = useState<LobbyPlayer[]>([])
 
   function copyUrlFn() {
     copy(global.window.location.href)
   }
 
+  useEffect(() => {
+    if (!playerLoading && playerSnaps) {
+      const _players: LobbyPlayer[] = []
+
+      playerSnaps.forEach((snap) => {
+        var player = snap.val()
+
+        if (!_players.find((p) => p.uuid === player.uuid)) {
+          _players.push({ key: snap.key, ...player })
+        }
+      })
+
+      setPlayers(_players)
+
+      if (!isOpen && !_players.find((p) => p.uuid === getUID())) {
+        onOpen()
+      }
+    }
+  }, [playerLoading, playerSnaps, setPlayers, isOpen, onOpen])
+
+  useEffect(() => {
+    if (players.length > 0 && !players.find((p) => !p.ready)) {
+      alert('all players ready')
+    }
+  }, [players])
+
   if (!gameId) {
     navigate('/')
     return <></>
-  }
-
-  const players: LobbyPlayer[] = []
-
-  if (!playerLoading && playerSnaps) {
-    playerSnaps.forEach((snap) => {
-      var player = snap.val()
-
-      if (!players.find((p) => p.uuid === player.uuid)) {
-        players.push({ key: snap.key, ...player })
-      }
-    })
-
-    if (!isOpen && !players.find((p) => p.uuid === getUID())) {
-      onOpen()
-    }
   }
 
   return (
