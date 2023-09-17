@@ -34,7 +34,7 @@ const GameLobby: React.FC = () => {
     copy(global.window.location.href)
   }
 
-  useEffect(() => {
+  useEffect(function setupPlayerArrayOnFirebaseSnapshotChanges() {
     if (!playerLoading && playerSnaps) {
       const _players: LobbyPlayer[] = []
 
@@ -48,15 +48,16 @@ const GameLobby: React.FC = () => {
 
       setPlayers(_players)
 
-      if (!isOpen && !_players.find((p) => p.uuid === getUID())) {
-        if (_players.length > 0 && _players.find((p) => !p.ready)) {
-          onOpen()
-        }
+      if (
+        !isOpen && !_players.find((p) => p.uuid === getUID()) &&
+        _players.length > 0 && _players.find((p) => !p.ready)
+      ) {
+        onOpen()
       }
     }
   }, [playerLoading, playerSnaps, setPlayers, isOpen, onOpen])
 
-  useEffect(() => {
+  useEffect(function startCountdownIfAllPlayersAreReady() {
     if (players.length > 0 && !players.find((p) => !p.ready)) {
       setGameLaunching(true)
       startCountdown()
@@ -66,7 +67,7 @@ const GameLobby: React.FC = () => {
     }
   }, [players, resetCountdown, startCountdown])
 
-  useEffect(() => {
+  useEffect(function navigateToActiveGamePageIfCountdownHasHitZero() {
     if (count === 0) {
       navigate('/')
     }
