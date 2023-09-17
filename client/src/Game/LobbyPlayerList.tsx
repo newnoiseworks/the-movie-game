@@ -64,10 +64,6 @@ const LobbyPlayerList: React.FC<LobbyPlayerListProps> = ({
   const notUserPlayers = players.filter((p) => p.uuid !== getUID())
   const userPlayer = players.find((p) => p.uuid === getUID())
 
-  if (!userPlayer) {
-    return <></>
-  }
-
   return <TableContainer>
     <Table variant="striped" colorScheme="purple">
       {/*<TableCaption>caption</TableCaption>*/}
@@ -78,11 +74,11 @@ const LobbyPlayerList: React.FC<LobbyPlayerListProps> = ({
         </Tr>
       </Thead>
       <Tbody>
-        <UserPlayerRow
+        {userPlayer && <UserPlayerRow
           player={userPlayer}
           key={userPlayer.key}
           gameId={gameId}
-        />
+        />}
         {notUserPlayers.map((player) => (
           <PlayerRow
             player={player}
