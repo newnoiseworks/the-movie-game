@@ -32,7 +32,7 @@ const CreateOrJoin: React.FC = () => {
     if (playerName) {
       try {
         gameId = await createGame(playerName, gameName)
-        navigate(`/game/${gameId}`)
+        navigate(`/game-lobby/${gameId}`)
       } catch(err) {
         alert("Could not create new game ID via API.")
         throw err

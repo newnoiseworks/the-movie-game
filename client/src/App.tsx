@@ -3,9 +3,9 @@ import { useState, useEffect } from 'react'
 import { Box, ChakraProvider, Container, extendTheme, Flex } from '@chakra-ui/react'
 
 import Footer from './Global/Footer'
-import CreateOrJoin from './Game/CreateOrJoin'
+import Create from './Game/Create'
 import SignUpInPage from './SignUpIn'
-import Game from './Game/Game'
+import GameLobby from './Game/Lobby'
 
 import { anonymousSignIn, auth } from './firebase'
 
@@ -22,15 +22,15 @@ const theme = extendTheme({
 const router = createBrowserRouter([
   {
     path: '/',
-    element: <CreateOrJoin />
+    element: <Create />
   },
   {
     path: '/sign-up-in',
     element: <SignUpInPage />
   },
   {
-    path: '/game/:gameId',
-    element: <Game />
+    path: '/game-lobby/:gameId',
+    element: <GameLobby />
   }
 ])
 

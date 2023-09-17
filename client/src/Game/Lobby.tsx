@@ -1,18 +1,10 @@
-import React, { useState } from 'react'
+import React from 'react'
 import {
   Button,
   Container,
   Flex,
-  Input,
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalFooter,
-  ModalBody,
   Spacer,
   Text,
-  VStack,
   useDisclosure
 } from '@chakra-ui/react'
 import { useParams, useNavigate } from 'react-router-dom'
@@ -20,11 +12,12 @@ import { useList, useObjectVal } from 'react-firebase-hooks/database'
 import { useCopyToClipboard } from 'usehooks-ts'
 
 import { getFromDB } from '../firebase'
-import { joinGame, getUID } from '../api'
+import { getUID } from '../api'
 
 import LobbyPlayerList, { LobbyPlayer } from './LobbyPlayerList'
+import LobbyJoinModal from './LobbyJoinModal'
 
-const CreateOrJoin: React.FC = () => {
+const GameLobby: React.FC = () => {
   // eslint-disable-next-line
   const [ _copyValue, copy ] = useCopyToClipboard()
   const navigate = useNavigate()
@@ -33,13 +26,6 @@ const CreateOrJoin: React.FC = () => {
 
   const [ playerSnaps, playerLoading, playerError ] = useList(getFromDB(`games/${gameId}/players`))
   const [ gameName, gameNameLoading, gameNameError ] = useObjectVal<string>(getFromDB(`games/${gameId}/name`))
-  const [ playerName, setPlayerName ] = useState<string>('')
-  const [ playerNameInvalid, setPlayerNameInvalid ] = useState<boolean>(false)
-
-  function onPlayerNameChange(value: string) {
-    setPlayerName(value)
-    setPlayerNameInvalid(!value || value.length < 3)
-  }
 
   function copyUrlFn() {
     copy(global.window.location.href)
@@ -96,50 +82,14 @@ const CreateOrJoin: React.FC = () => {
         gameId={gameId}
         copyUrlFn={copyUrlFn}
       />
-      <Modal isOpen={isOpen} onClose={onClose}>
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>Creating Game</ModalHeader>
-          <ModalBody>
-            <
-              VStack
-              alignItems="flex-start"
-            >
-              <Input
-                placeholder="Enter Your Name*"
-                isInvalid={playerNameInvalid}
-                value={playerName}
-                onChange={(e) => onPlayerNameChange(e.target.value)}
-              />
-              {playerNameInvalid &&
-                <
-                  Text
-                  as="p"
-                  fontSize="x-small"
-                >
-                  Name of 3 characters or more required
-                </Text>
-              }
-            </VStack>
-          </ModalBody>
-          <ModalFooter>
-            <Button onClick={async () => {
-              console.log("click")
-              setPlayerNameInvalid(!playerName || playerName.length < 3)
-
-              if (!playerNameInvalid) {
-                await joinGame(playerName, gameId)
-                onClose()
-              }
-            }}>
-              Join Game
-            </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
+      <LobbyJoinModal
+        isOpen={isOpen}
+        onClose={onClose}
+        gameId={gameId}
+      />
     </Container>
   )
 }
 
-export default CreateOrJoin
+export default GameLobby
 
