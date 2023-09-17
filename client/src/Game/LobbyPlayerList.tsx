@@ -10,8 +10,7 @@ import {
   Th,
   Td,
   // TableCaption,
-  TableContainer,
-} from '@chakra-ui/react'
+  TableContainer, } from '@chakra-ui/react'
 
 import { setToDB } from '../firebase'
 import { getUID } from '../api'
@@ -62,6 +61,13 @@ const LobbyPlayerList: React.FC<LobbyPlayerListProps> = ({
   gameId,
   copyUrlFn
 }) => {
+  const notUserPlayers = players.filter((p) => p.uuid !== getUID())
+  const userPlayer = players.find((p) => p.uuid === getUID())
+
+  if (!userPlayer) {
+    return <></>
+  }
+
   return <TableContainer>
     <Table variant="striped" colorScheme="purple">
       {/*<TableCaption>caption</TableCaption>*/}
@@ -72,7 +78,12 @@ const LobbyPlayerList: React.FC<LobbyPlayerListProps> = ({
         </Tr>
       </Thead>
       <Tbody>
-        {players.map((player) => (
+        <UserPlayerRow
+          player={userPlayer}
+          key={userPlayer.key}
+          gameId={gameId}
+        />
+        {notUserPlayers.map((player) => (
           <PlayerRow
             player={player}
             key={player.key}
