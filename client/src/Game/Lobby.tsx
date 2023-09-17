@@ -9,7 +9,7 @@ import {
 } from '@chakra-ui/react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useList, useObjectVal } from 'react-firebase-hooks/database'
-import { useCopyToClipboard } from 'usehooks-ts'
+import { useCopyToClipboard, useCountdown } from 'usehooks-ts'
 
 import { getFromDB } from '../firebase'
 import { getUID } from '../api'
@@ -20,6 +20,7 @@ import LobbyJoinModal from './LobbyJoinModal'
 const GameLobby: React.FC = () => {
   // eslint-disable-next-line
   const [ _copyValue, copy ] = useCopyToClipboard()
+  const [count, { startCountdown, resetCountdown  }] = useCountdown({ countStart: 10 })
   const navigate = useNavigate()
   const { gameId } = useParams()
   const { isOpen, onOpen, onClose } = useDisclosure()
@@ -27,6 +28,7 @@ const GameLobby: React.FC = () => {
   const [ playerSnaps, playerLoading, playerError ] = useList(getFromDB(`games/${gameId}/players`))
   const [ gameName, gameNameLoading, gameNameError ] = useObjectVal<string>(getFromDB(`games/${gameId}/name`))
   const [ players, setPlayers ] = useState<LobbyPlayer[]>([])
+  const [ gameLaunching, setGameLaunching ] = useState<boolean>(false)
 
   function copyUrlFn() {
     copy(global.window.location.href)
@@ -47,16 +49,28 @@ const GameLobby: React.FC = () => {
       setPlayers(_players)
 
       if (!isOpen && !_players.find((p) => p.uuid === getUID())) {
-        onOpen()
+        if (_players.length > 0 && _players.find((p) => !p.ready)) {
+          onOpen()
+        }
       }
     }
   }, [playerLoading, playerSnaps, setPlayers, isOpen, onOpen])
 
   useEffect(() => {
     if (players.length > 0 && !players.find((p) => !p.ready)) {
-      alert('all players ready')
+      setGameLaunching(true)
+      startCountdown()
+    } else {
+      setGameLaunching(false)
+      resetCountdown()
     }
-  }, [players])
+  }, [players, resetCountdown, startCountdown])
+
+  useEffect(() => {
+    if (count === 0) {
+      navigate('/')
+    }
+  }, [count, navigate])
 
   if (!gameId) {
     navigate('/')
@@ -75,17 +89,35 @@ const GameLobby: React.FC = () => {
           Lobby - The Movie Game
         </Text>
       </Container>
-      <Container sx={{ mb: 4 }}>
-        <Flex alignItems="center">
-          <Text variant="h3" fontSize="sm">
-            Share this URL to ask others to join
-          </Text>
-          <Spacer />
-          <Button colorScheme="purple" onClick={copyUrlFn}>
-            Copy Share Link
-          </Button>
-        </Flex>
-      </Container>
+      {
+        gameLaunching ?
+        (
+          <Container>
+            <Text variant="h3" fontSize="sm">
+              {
+                players.find((p) => p.uuid === getUID()) ?
+                  `Game Launching in ${count} seconds...`
+                :
+                  'Game launching! Unless someone clicks ready to off, no new joiners.'
+              }
+            </Text>
+          </Container>
+        )
+        :
+        (
+          <Container sx={{ mb: 4 }}>
+            <Flex alignItems="center">
+              <Text variant="h3" fontSize="sm">
+                Share this URL to ask others to join
+              </Text>
+              <Spacer />
+              <Button colorScheme="purple" onClick={copyUrlFn}>
+                Copy Share Link
+              </Button>
+            </Flex>
+          </Container>
+        )
+      }
       {playerLoading && "Loading players..."}
       {playerError && `Error loading players... ${playerError}`}
       <LobbyPlayerList
