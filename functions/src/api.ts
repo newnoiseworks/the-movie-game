@@ -122,7 +122,9 @@ app.post('/joinGame', apiAuth, async (request, response) => {
       response.statusCode = 422
     }
 
-    response.send()
+    const playerKey = Object.keys(game.players).find((key) => game.players[key].uuid === request.idToken!.uid)
+
+    response.send(playerKey)
   } catch(err) {
     response.statusCode = 500
     response.send()

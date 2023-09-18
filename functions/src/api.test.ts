@@ -311,6 +311,7 @@ describe("/joinGame", () => {
     expect(playerTwoKey).toBeTruthy()
     expect(gameRefFromServer.players[playerTwoKey!]).toBeTruthy()
     expect(gameRefFromServer.players[playerTwoKey!].uuid).toBe(uuidTwo)
+    expect(response.data).toBe(playerTwoKey)
     expect(Object.keys(gameRefFromServer.players).length).toBe(2)
   })
 
