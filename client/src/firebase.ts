@@ -1,6 +1,6 @@
 import { initializeApp } from "firebase/app"
 import { getAuth, connectAuthEmulator, signInAnonymously } from "firebase/auth"
-import { getDatabase, ref, set } from "firebase/database"
+import { getDatabase, ref, set, onDisconnect } from "firebase/database"
 
 const firebaseConfig = {
   apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
@@ -38,6 +38,10 @@ function setToDB(query: string, data: Object) {
   return set(getFromDB(query), data)
 }
 
+function removeOnDisconnect(query: string) {
+  onDisconnect(getFromDB(query)).remove()
+}
+
 if (process.env.NODE_ENV === "development") {
   connectAuthEmulator(
     auth,
@@ -50,6 +54,7 @@ export {
   anonymousSignIn,
   app,
   getFromDB,
+  removeOnDisconnect,
   setToDB,
 }
 

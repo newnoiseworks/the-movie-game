@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-import { auth } from './firebase'
+import { auth, removeOnDisconnect } from './firebase'
 
 async function createGame(name: string, gameName?: string) {
   const headers = await getAuthHeaders()
@@ -24,6 +24,8 @@ async function joinGame(name: string, gid: string) {
       { name, gid },
       { headers }
     )
+
+  removeOnDisconnect(`games/${gid}/players/${response.data}`)
 
   return response.data
 }
