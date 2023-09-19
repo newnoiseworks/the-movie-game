@@ -3,9 +3,9 @@ import { useState, useEffect } from 'react'
 import { Box, ChakraProvider, Container, extendTheme, Flex } from '@chakra-ui/react'
 
 import Footer from './Global/Footer'
-import Create from './Game/Create'
+import Create from './GameSetup/Create'
 import SignUpInPage from './SignUpIn'
-import GameLobby from './Game/Lobby'
+import GameLobby from './GameSetup/Lobby'
 
 import { anonymousSignIn, auth } from './firebase'
 
