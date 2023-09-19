@@ -16,10 +16,17 @@ interface GamePlayerListProps {
 }
 
 const PlayerRow: React.FC<{ player: GamePlayer, currentPlayer: string }> = ({ player, currentPlayer }) => {
-  let scoreString = ""
+  let scoreString = "*****"
+  const gameWord = 'MOVIE'.split('')
 
   if (player.score) {
+    scoreString = ""
+
     for (let i = 0; i < player.score; i++) {
+      scoreString += gameWord[i]
+    }
+
+    for (let i = gameWord.length; i > player.score; i--) {
       scoreString += "*"
     }
   }
