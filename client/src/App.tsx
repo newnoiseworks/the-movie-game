@@ -6,6 +6,7 @@ import Footer from './Global/Footer'
 import Create from './GameSetup/Create'
 import SignUpInPage from './SignUpIn'
 import GameLobby from './GameSetup/Lobby'
+import Game from './Game/Game'
 
 import { anonymousSignIn, auth } from './firebase'
 
@@ -31,6 +32,10 @@ const router = createBrowserRouter([
   {
     path: '/game-lobby/:gameId',
     element: <GameLobby />
+  },
+  {
+    path: '/game/:gameId',
+    element: <Game />
   }
 ])
 
