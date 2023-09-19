@@ -69,7 +69,7 @@ const GameLobby: React.FC = () => {
 
   useEffect(function navigateToActiveGamePageIfCountdownHasHitZero() {
     if (count === 0) {
-      navigate('/')
+      navigate(`/game/${gameId}`)
     }
   }, [count, navigate])
 

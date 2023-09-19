@@ -8,10 +8,12 @@ import {
 
 import { getFromDB } from '../firebase'
 import {getUID} from '../api'
+import GamePlayerList from './GamePlayerList'
 
-interface GamePlayer {
+export interface GamePlayer {
   uuid: string
   name: string
+  key: string
   score?: number
   ready?: boolean
 }
@@ -51,17 +53,21 @@ const Game: React.FC = () => {
 
   useEffect(function setupGameMoveModalOnCurrentPlayerChanges() {
     if (getUID() === currentPlayer) {
-      if (!history || history.length) {
-        // first move modal
+      if (!history) {
+        console.log('show first move modal')
       } else {
         const historyKeys = history.map((h) => h.key).sort()
         const lastMoveKey = historyKeys[historyKeys.length - 1]
-        const lastMove = history.find((h) => h.key === lastMoveKey)!.val() as GameMove
+        const lastMoveSnapshot = history.find((h) => h.key === lastMoveKey)
 
-        if (lastMove.toType === 'mid') {
-          // show person modal
-        } else {
-          // show movie modal
+        if (lastMoveSnapshot) {
+          const lastMove = lastMoveSnapshot.val() as GameMove
+
+          if (lastMove.toType === 'mid') {
+            // show person modal
+          } else {
+            // show movie modal
+          }
         }
       }
     }
@@ -78,6 +84,10 @@ const Game: React.FC = () => {
         <Text variant="h3" fontSize="sm">
           Lobby - The Movie Game
         </Text>
+        <GamePlayerList
+          players={players}
+          currentPlayer={currentPlayer as string}
+        />
       </Container>
     </Container>
   )
