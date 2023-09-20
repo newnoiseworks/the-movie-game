@@ -58,7 +58,7 @@ const GameLobby: React.FC = () => {
   }, [playerLoading, playerSnaps, setPlayers, isOpen, onOpen])
 
   useEffect(function startCountdownIfAllPlayersAreReady() {
-    if (players.length > 0 && !players.find((p) => !p.ready)) {
+    if (players.length > 1 && !players.find((p) => !p.ready)) {
       setGameLaunching(true)
       startCountdown()
     } else {
@@ -71,7 +71,7 @@ const GameLobby: React.FC = () => {
     if (count === 0) {
       navigate(`/game/${gameId}`)
     }
-  }, [count, navigate])
+  }, [count, navigate, gameId])
 
   if (!gameId) {
     navigate('/')
