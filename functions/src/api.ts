@@ -18,7 +18,7 @@ app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(cors({ origin: true }))
 
-app.use('/movieSearch', async (request, response) => {
+app.get('/movieSearch', async (request, response) => {
   let searchResponse
 
   try {
@@ -30,7 +30,7 @@ app.use('/movieSearch', async (request, response) => {
   response.send(searchResponse.data)
 })
 
-app.use('/personSearch', async (request, response) => {
+app.get('/personSearch', async (request, response) => {
   let searchResponse
 
   try {
@@ -42,7 +42,7 @@ app.use('/personSearch', async (request, response) => {
   response.send(searchResponse.data)
 })
 
-app.use('/getMovie', async (request, response) => {
+app.get('/getMovie', async (request, response) => {
   let movieResponse
 
   try {
@@ -54,7 +54,7 @@ app.use('/getMovie', async (request, response) => {
   response.send(movieResponse.data)
 })
 
-app.use('/getPerson', async (request, response) => {
+app.get('/getPerson', async (request, response) => {
   let personResponse
 
   try {
