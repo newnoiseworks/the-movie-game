@@ -99,16 +99,21 @@ export default class Game {
   canPlayerJoin(newPlayer: Player) {
     let allPlayersReady = true
 
-    for (var playerKey in this.players) {
-      const player = this.players[playerKey]
+    if (Object.keys(this.players).length > 1) {
+      for (var playerKey in this.players) {
+        const player = this.players[playerKey]
 
-      if (player.uuid === newPlayer.uuid) {
-        return false
-      }
+        if (player.uuid === newPlayer.uuid) {
+          return false
+        }
 
-      if (!player.ready) {
-        allPlayersReady = false
+        if (!player.ready) {
+          allPlayersReady = false
+        }
       }
+    } else {
+      // TODO: this sounds weird, technically all players are ready there just aren't enough of them to consider locking the game
+      allPlayersReady = false
     }
 
     return !allPlayersReady
