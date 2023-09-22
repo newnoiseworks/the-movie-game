@@ -50,7 +50,7 @@ const GameLobby: React.FC = () => {
 
       if (
         !isOpen && !_players.find((p) => p.uuid === getUID()) &&
-        _players.length > 0 && _players.find((p) => !p.ready)
+        !(_players.length > 1 && _players.find((p) => !p.ready))
       ) {
         onOpen()
       }

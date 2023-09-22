@@ -35,7 +35,7 @@ const LobbyJoinModal: React.FC<LobbyJoinModalProps> = ({
     <Modal isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader>Creating Game</ModalHeader>
+        <ModalHeader>Join Game</ModalHeader>
         <ModalBody>
           <VStack alignItems="flex-start">
             <Input
