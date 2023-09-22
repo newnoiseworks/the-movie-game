@@ -3,12 +3,14 @@ import { useParams } from 'react-router-dom'
 import { useList, useObjectVal } from 'react-firebase-hooks/database'
 import {
   Container,
+  useDisclosure,
   Text,
 } from '@chakra-ui/react'
 
 import { getFromDB } from '../firebase'
 import {getUID} from '../api'
 import GamePlayerList from './GamePlayerList'
+import GameFirstMoveModal from './GameFirstMoveModal'
 
 export interface GamePlayer {
   uuid: string
@@ -32,6 +34,7 @@ const Game: React.FC = () => {
   const [ gameName, gameNameLoading, gameNameError ] = useObjectVal<string>(getFromDB(`games/${gameId}/name`))
   const [ currentPlayer ] = useObjectVal<string>(getFromDB(`games/${gameId}/currentPlayer`))
   const [ history ] = useList(getFromDB(`games/${gameId}/history`))
+  const { isOpen: isMoveModalOpen, onOpen: onMoveModalOpen, onClose: onMoveModalClose } = useDisclosure()
 
   const [ players, setPlayers ] = useState<GamePlayer[]>([])
 
@@ -52,9 +55,9 @@ const Game: React.FC = () => {
   }, [playerLoading, playerSnaps, setPlayers])
 
   useEffect(function setupGameMoveModalOnCurrentPlayerChanges() {
-    if (getUID() === currentPlayer) {
-      if (!history) {
-        console.log('show first move modal')
+    if (currentPlayer && history && getUID() === currentPlayer) {
+      if (history.length === 0) {
+        onMoveModalOpen()
       } else {
         const historyKeys = history.map((h) => h.key).sort()
         const lastMoveKey = historyKeys[historyKeys.length - 1]
@@ -71,7 +74,7 @@ const Game: React.FC = () => {
         }
       }
     }
-  }, [currentPlayer, history])
+  }, [currentPlayer, history, onMoveModalOpen])
 
   return (
     <Container>
@@ -88,6 +91,7 @@ const Game: React.FC = () => {
           players={players}
           currentPlayer={currentPlayer as string}
         />
+        <GameFirstMoveModal isOpen={isMoveModalOpen} onClose={onMoveModalClose} />
       </Container>
     </Container>
   )

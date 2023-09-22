@@ -30,6 +30,18 @@ async function joinGame(name: string, gid: string) {
   return response.data
 }
 
+async function searchForPeople(name: string) {
+  const headers = await getAuthHeaders()
+
+  const response = await axios
+    .get(
+      `${process.env.REACT_APP_FUNCTIONS_URL}/personSearch?q=${name}`,
+      { headers }
+    )
+
+  return response.data
+}
+
 async function getAuthHeaders() {
   const token = await auth.currentUser!.getIdToken()
 
@@ -45,6 +57,7 @@ function getUID() {
 export {
   createGame,
   joinGame,
+  searchForPeople,
   getUID
 }
 
