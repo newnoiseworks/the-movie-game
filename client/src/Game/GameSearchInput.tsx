@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useRef, useState } from 'react'
 import {
   FormControl,
   Popover,
@@ -11,41 +11,49 @@ import {
   InputRightElement
 } from '@chakra-ui/react'
 
-import { searchForPeople } from '../api'
-
-interface PersonResult {
+interface SearchResult {
   id: number
   name: string
 }
 
-const GamePeopleSearchInput: React.FC = () => {
-  const [peopleSearchResults, setPeopleSearchResults] = useState<PersonResult[]>([])
+interface GameSearchInputProps {
+  searchFn: (s: string) => Promise<{ results: SearchResult[] }>
+  setIdFn: (id: number) => void
+  placeholder: string
+}
+
+const GameSearchInput: React.FC<GameSearchInputProps> = ({
+  placeholder, searchFn
+}) => {
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([])
   const [isLoading, setLoading] = useState<boolean>(false)
-  const [searchQuery, setSearchQuery] = useState<string>('')
+  const inputRef = useRef<HTMLInputElement>(null)
 
   async function autoCompleteOnChange(value: string) {
-    setSearchQuery(value)
+    if (inputRef.current) {
+      inputRef.current.value = value
+    }
 
     if (value.length < 3) {
-      setPeopleSearchResults([])
+      setSearchResults([])
       return
     }
 
     setLoading(true)
 
-    const searchResults = (await searchForPeople(value)).results.map((result: any) => ({
+    const _searchResults = (await searchFn(value)).results.map((result: any) => ({
       id: result.id,
       name: result.name
     }))
 
     setLoading(false)
 
-    setPeopleSearchResults(searchResults)
+    setSearchResults(_searchResults)
   }
 
   return (
     <Popover 
-      isOpen={peopleSearchResults.length > 0}
+      isOpen={searchResults.length > 0}
       placement="bottom"
       autoFocus={false}
       matchWidth
@@ -54,11 +62,10 @@ const GamePeopleSearchInput: React.FC = () => {
         <FormControl>
           <InputGroup>
             <Input
-              placeholder="Search for person"
+              placeholder={placeholder}
               autoComplete="off"
-              value={searchQuery}
+              ref={inputRef}
               onChange={(e) => autoCompleteOnChange(e.target.value)}
-              onBlur={() => setPeopleSearchResults([])}
             />
             {isLoading &&
               <InputRightElement>
@@ -70,9 +77,18 @@ const GamePeopleSearchInput: React.FC = () => {
       </PopoverTrigger>
       <PopoverContent>
         <PopoverBody>
-        {peopleSearchResults.map((person) => (
-          <div key={person.id} onClick={() => setSearchQuery(person.name)}>
-            {person.name}
+        {searchResults.map((result) => (
+          <div
+            key={result.id}
+            onClick={() => {
+              if (inputRef.current) {
+                inputRef.current.value = result.name
+              }
+
+              setSearchResults([])
+            }}
+          >
+            {result.name}
           </div>
         ))}</PopoverBody>
       </PopoverContent>
@@ -80,5 +96,5 @@ const GamePeopleSearchInput: React.FC = () => {
   )
 }
 
-export default GamePeopleSearchInput
+export default GameSearchInput
 

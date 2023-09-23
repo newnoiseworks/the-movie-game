@@ -42,6 +42,23 @@ async function searchForPeople(name: string) {
   return response.data
 }
 
+async function searchForMovie(name: string) {
+  const headers = await getAuthHeaders()
+
+  const response = await axios
+    .get(
+      `${process.env.REACT_APP_FUNCTIONS_URL}/movieSearch?q=${name}`,
+      { headers }
+    )
+
+  response.data.results = response.data.results.map((result: any) => ({
+    ...result,
+    name: result.title
+  }))
+
+  return response.data
+}
+
 async function getAuthHeaders() {
   const token = await auth.currentUser!.getIdToken()
 
@@ -58,6 +75,7 @@ export {
   createGame,
   joinGame,
   searchForPeople,
+  searchForMovie,
   getUID
 }
 

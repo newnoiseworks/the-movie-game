@@ -10,7 +10,7 @@ import {
 import { getFromDB } from '../firebase'
 import {getUID} from '../api'
 import GamePlayerList from './GamePlayerList'
-import GameFirstMoveModal from './GameFirstMoveModal'
+import GameMoveModal, { SearchType } from './GameMoveModal'
 
 export interface GamePlayer {
   uuid: string
@@ -37,6 +37,7 @@ const Game: React.FC = () => {
   const { isOpen: isMoveModalOpen, onOpen: onMoveModalOpen, onClose: onMoveModalClose } = useDisclosure()
 
   const [ players, setPlayers ] = useState<GamePlayer[]>([])
+  const [ searchType, setSearchType ] = useState<SearchType>(SearchType.both)
 
   useEffect(function setupPlayerArrayOnFirebaseSnapshotChanges() {
     if (!playerLoading && playerSnaps) {
@@ -57,6 +58,7 @@ const Game: React.FC = () => {
   useEffect(function setupGameMoveModalOnCurrentPlayerChanges() {
     if (currentPlayer && history && getUID() === currentPlayer) {
       if (history.length === 0) {
+        setSearchType(SearchType.both)
         onMoveModalOpen()
       } else {
         const historyKeys = history.map((h) => h.key).sort()
@@ -67,14 +69,20 @@ const Game: React.FC = () => {
           const lastMove = lastMoveSnapshot.val() as GameMove
 
           if (lastMove.toType === 'mid') {
-            // show person modal
+            setSearchType(SearchType.movie)
           } else {
-            // show movie modal
+            setSearchType(SearchType.person)
           }
+
+          onMoveModalOpen()
         }
       }
     }
   }, [currentPlayer, history, onMoveModalOpen])
+
+  function makeChoice(_id: number, _choice: SearchType) {
+
+  }
 
   return (
     <Container>
@@ -91,7 +99,12 @@ const Game: React.FC = () => {
           players={players}
           currentPlayer={currentPlayer as string}
         />
-        <GameFirstMoveModal isOpen={isMoveModalOpen} onClose={onMoveModalClose} />
+        <GameMoveModal 
+          makeChoice={makeChoice}
+          searchType={searchType}
+          isOpen={isMoveModalOpen} 
+          onClose={onMoveModalClose} 
+        />
       </Container>
     </Container>
   )
