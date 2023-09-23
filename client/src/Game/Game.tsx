@@ -8,7 +8,7 @@ import {
 } from '@chakra-ui/react'
 
 import { getFromDB } from '../firebase'
-import {getUID} from '../api'
+import {getUID, playerGameChoice} from '../api'
 import GamePlayerList from './GamePlayerList'
 import GameMoveModal, { SearchType } from './GameMoveModal'
 
@@ -20,12 +20,11 @@ export interface GamePlayer {
   ready?: boolean
 }
 
-type idType = 'mid' | 'pid'
-
 interface GameMove {
   mid?: number
   pid?: number
-  toType: idType
+  toType: SearchType
+  correct?: boolean
 }
 
 const Game: React.FC = () => {
@@ -68,20 +67,54 @@ const Game: React.FC = () => {
         if (lastMoveSnapshot) {
           const lastMove = lastMoveSnapshot.val() as GameMove
 
-          if (lastMove.toType === 'mid') {
-            setSearchType(SearchType.movie)
-          } else {
+          if (lastMove.toType === SearchType.movie) {
             setSearchType(SearchType.person)
+          } else {
+            setSearchType(SearchType.movie)
           }
 
           onMoveModalOpen()
         }
       }
+    } else {
+      onMoveModalClose()
     }
-  }, [currentPlayer, history, onMoveModalOpen])
+  }, [currentPlayer, history, onMoveModalOpen, onMoveModalClose])
 
-  function makeChoice(_id: number, _choice: SearchType) {
+  async function makeChoice(id: number, choice: SearchType) {
+    const data: GameMove = {
+      toType: choice
+    }
 
+    if (choice === SearchType.movie) {
+      data.mid = id
+    } else {
+      data.pid = id
+    }
+
+    if (history) {
+      const historyKeys = history.map((h) => h.key).sort()
+      const lastMoveKey = historyKeys[historyKeys.length - 1]
+      const lastMoveSnapshot = history.find((h) => h.key === lastMoveKey)
+
+      if (lastMoveSnapshot) {
+        const lastMove = lastMoveSnapshot.val()
+
+        if (lastMove.correct) {
+          if (choice === SearchType.movie) {
+            data.pid = lastMove.pid
+          } else {
+            data.mid = lastMove.mid
+          }
+        }
+      }
+    }
+
+    try {
+      await playerGameChoice(data, gameId!)
+    } catch(err) {
+      console.error(err)
+    }
   }
 
   return (

@@ -1,6 +1,7 @@
 import axios from 'axios'
 
 import { auth, removeOnDisconnect } from './firebase'
+import {SearchType} from './Game/GameMoveModal'
 
 async function createGame(name: string, gameName?: string) {
   const headers = await getAuthHeaders()
@@ -26,6 +27,31 @@ async function joinGame(name: string, gid: string) {
     )
 
   removeOnDisconnect(`games/${gid}/players/${response.data}`)
+
+  return response.data
+}
+
+async function playerGameChoice(
+  choice: {
+    mid?: number,
+    pid?: number,
+    toType: SearchType
+  },
+  gid: string
+) {
+  const headers = await getAuthHeaders()
+
+  const data: any = {
+    gid,
+    ...choice
+  }
+
+  const response = await axios
+    .post(
+      `${process.env.REACT_APP_FUNCTIONS_URL}/playerGameChoice`,
+      data,
+      { headers }
+    )
 
   return response.data
 }
@@ -74,6 +100,7 @@ function getUID() {
 export {
   createGame,
   joinGame,
+  playerGameChoice,
   searchForPeople,
   searchForMovie,
   getUID
