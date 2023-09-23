@@ -1,7 +1,6 @@
 import axios from 'axios'
 
 import { auth, removeOnDisconnect } from './firebase'
-import {SearchType} from './Game/GameMoveModal'
 
 async function createGame(name: string, gameName?: string) {
   const headers = await getAuthHeaders()
@@ -35,7 +34,7 @@ async function playerGameChoice(
   choice: {
     mid?: number,
     pid?: number,
-    toType: SearchType
+    toType: 'mid' | 'pid'
   },
   gid: string
 ) {

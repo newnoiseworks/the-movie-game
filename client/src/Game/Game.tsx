@@ -23,7 +23,7 @@ export interface GamePlayer {
 interface GameMove {
   mid?: number
   pid?: number
-  toType: SearchType
+  toType: 'mid' | 'pid'
   correct?: boolean
 }
 
@@ -65,9 +65,11 @@ const Game: React.FC = () => {
         const lastMoveSnapshot = history.find((h) => h.key === lastMoveKey)
 
         if (lastMoveSnapshot) {
-          const lastMove = lastMoveSnapshot.val() as GameMove
+          const lastMove = lastMoveSnapshot.val()
 
-          if (lastMove.toType === SearchType.movie) {
+          console.log(lastMove)
+
+          if (lastMove.toType === 'mid') {
             setSearchType(SearchType.person)
           } else {
             setSearchType(SearchType.movie)
@@ -83,7 +85,7 @@ const Game: React.FC = () => {
 
   async function makeChoice(id: number, choice: SearchType) {
     const data: GameMove = {
-      toType: choice
+      toType: choice === SearchType.movie ? 'mid' : 'pid'
     }
 
     if (choice === SearchType.movie) {
