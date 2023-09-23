@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react'
+import { useRef, useState, forwardRef, useImperativeHandle } from 'react'
 import {
   FormControl,
   Popover,
@@ -16,15 +16,21 @@ interface SearchResult {
   name: string
 }
 
+export interface GameSearchInputRef {
+  clearInput: () => void
+}
+
 interface GameSearchInputProps {
   searchFn: (s: string) => Promise<{ results: SearchResult[] }>
   setIdFn: (id: number) => void
   placeholder: string
 }
 
-const GameSearchInput: React.FC<GameSearchInputProps> = ({
-  placeholder, searchFn
-}) => {
+const GameSearchInput: React.ForwardRefRenderFunction<
+  GameSearchInputRef, GameSearchInputProps
+> = ({
+  placeholder, searchFn, setIdFn
+}, ref) => {
   const [searchResults, setSearchResults] = useState<SearchResult[]>([])
   const [isLoading, setLoading] = useState<boolean>(false)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -50,6 +56,14 @@ const GameSearchInput: React.FC<GameSearchInputProps> = ({
 
     setSearchResults(_searchResults)
   }
+
+  useImperativeHandle(ref, () => ({
+    clearInput: () => {
+      if (inputRef.current) {
+        inputRef.current.value = ''
+      }
+    }
+  }))
 
   return (
     <Popover 
@@ -86,6 +100,7 @@ const GameSearchInput: React.FC<GameSearchInputProps> = ({
               }
 
               setSearchResults([])
+              setIdFn(result.id)
             }}
           >
             {result.name}
@@ -96,5 +111,5 @@ const GameSearchInput: React.FC<GameSearchInputProps> = ({
   )
 }
 
-export default GameSearchInput
+export default forwardRef(GameSearchInput)
 

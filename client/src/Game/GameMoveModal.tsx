@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useRef, useState } from 'react'
 import {
   Button,
   Modal,
@@ -11,7 +11,7 @@ import {
 } from '@chakra-ui/react'
 
 import { searchForPeople, searchForMovie } from '../api'
-import GameSearchInput from './GameSearchInput'
+import GameSearchInput, { GameSearchInputRef } from './GameSearchInput'
 
 export enum SearchType {
   person,
@@ -33,20 +33,36 @@ const GameMoveModal: React.FC<GameMoveModalProps> = ({
   const [movieId, setMovieId] = useState<number>(-1)
   const [choice, setChoice] = useState<SearchType>(searchType)
 
+  const personInput = useRef<GameSearchInputRef>(null)
+  const movieInput = useRef<GameSearchInputRef>(null)
+
   function setPersonFromInput(id: number) {
     setPersonId(id)
     setMovieId(-1)
     setChoice(SearchType.person)
+
+    if (movieInput.current) {
+      movieInput.current.clearInput()
+    }
   }
 
   function setMovieFromInput(id: number) {
     setMovieId(id)
     setPersonId(-1)
     setChoice(SearchType.movie)
+
+    if (personInput.current) {
+      personInput.current.clearInput()
+    }
   }
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      closeOnOverlayClick={false}
+      closeOnEsc={false}
+    >
       <ModalOverlay />
       <ModalContent>
         <ModalHeader>Make Move</ModalHeader>
@@ -54,10 +70,11 @@ const GameMoveModal: React.FC<GameMoveModalProps> = ({
           <VStack alignItems="flex-start">
             {
               (
-                searchType === SearchType.person || 
+                searchType === SearchType.person ||
                 searchType === SearchType.both
               ) &&
               <GameSearchInput
+                ref={personInput}
                 setIdFn={setPersonFromInput}
                 searchFn={searchForPeople}
                 placeholder="Search for person"
@@ -65,10 +82,11 @@ const GameMoveModal: React.FC<GameMoveModalProps> = ({
             }
             {
               (
-                searchType === SearchType.movie || 
+                searchType === SearchType.movie ||
                 searchType === SearchType.both
               ) &&
               <GameSearchInput
+                ref={movieInput}
                 setIdFn={setMovieFromInput}
                 searchFn={searchForMovie}
                 placeholder="Search for movie"
