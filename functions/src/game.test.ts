@@ -197,7 +197,7 @@ describe("Game#playerMove", () => {
     await game.playerReady(uuid3, true)
   })
 
-  test("if player is incorrect, adjust score, currentPlayer uuid should adjust", async () => {
+  test("if player is incorrect, adjust score, currentPlayer uuid should adjust, mark history as wrong", async () => {
     let gameObj = (await db.ref(`games/${gameKey}`).once("value")).val() as Game
     let firstUser = gameObj.players[Object.keys(gameObj.players)[0]]!
     const firstCurrentPlayer = gameObj.currentPlayer
@@ -209,15 +209,17 @@ describe("Game#playerMove", () => {
 
     gameObj = (await db.ref(`games/${gameKey}`).once("value")).val()
     firstUser = gameObj.players[Object.keys(gameObj.players)[0]]!
+    const lastMove = gameObj.history[Object.keys(gameObj.history).sort()[Object.keys(gameObj.history).length - 1]]
     const secondCurrentPlayer = gameObj.currentPlayer
 
+    expect(lastMove.correct).toBeFalsy()
     expect(firstUser.score).toEqual(1)
     expect(firstCurrentPlayer).not.toBe(secondCurrentPlayer)
     expect(secondCurrentPlayer).toBe(uuid2)
     expect(game.currentPlayer).toBe(uuid2)
   })
 
-  test("if player is correct, no score change, currentPlayer uuid should adjust", async () => {
+  test("if player is correct, no score change, currentPlayer uuid should adjust, history should mark as correct", async () => {
     let gameObj = (await db.ref(`games/${gameKey}`).once("value")).val() as Game
     let firstUser = gameObj.players[Object.keys(gameObj.players)[0]]!
     const firstCurrentPlayer = gameObj.currentPlayer
@@ -229,8 +231,10 @@ describe("Game#playerMove", () => {
 
     gameObj = (await db.ref(`games/${gameKey}`).once("value")).val()
     firstUser = gameObj.players[Object.keys(gameObj.players)[0]]!
+    const lastMove = gameObj.history[Object.keys(gameObj.history).sort()[Object.keys(gameObj.history).length - 1]]
     const secondCurrentPlayer = gameObj.currentPlayer
 
+    expect(lastMove.correct).toBeTruthy()
     expect(firstUser.score).toEqual(0)
     expect(firstCurrentPlayer).not.toBe(secondCurrentPlayer)
     expect(secondCurrentPlayer).toBe(uuid2)

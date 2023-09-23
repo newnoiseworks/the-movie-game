@@ -15,6 +15,7 @@ export interface GameMove {
   mid?: number
   pid?: number
   toType: idType
+  correct?: boolean
 }
 
 export default class Game {
@@ -147,6 +148,9 @@ export default class Game {
     isCorrect: boolean,
     move: GameMove
   ) {
+    // TODO: This could be better passed into the game move itself as it's evaluated outside of this class, would need to adjust tests
+    move.correct = isCorrect
+
     const playerKey = this.sortedKeys(this.players).find((key) => this.players[key].uuid === uuid)!
     const player = this.players[playerKey]
 
