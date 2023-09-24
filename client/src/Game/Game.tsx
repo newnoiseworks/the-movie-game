@@ -2,13 +2,9 @@ import React, { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { useList, useObjectVal } from 'react-firebase-hooks/database'
 import {
-  Card,
-  CardBody,
   Container,
   useDisclosure,
   Text,
-  HStack,
-  Heading,
 } from '@chakra-ui/react'
 
 import { getFromDB } from '../firebase'
@@ -32,6 +28,11 @@ export interface GameMove {
   correct?: boolean
 }
 
+export interface GameHistoryMove extends GameMove {
+  name: string
+  photo: string
+}
+
 const Game: React.FC = () => {
   const { gameId } = useParams()
   const [ playerSnaps, playerLoading ] = useList(getFromDB(`games/${gameId}/players`))
@@ -43,7 +44,7 @@ const Game: React.FC = () => {
   const [ players, setPlayers ] = useState<GamePlayer[]>([])
   const [ currentPlayerName, setCurrentPlayerName ] = useState<string>('')
   const [ searchType, setSearchType ] = useState<SearchType>(SearchType.both)
-  const [ lastMove, setLastMove ] = useState<GameMove>()
+  const [ lastMove, setLastMove ] = useState<GameHistoryMove>()
 
   useEffect(function setupPlayerArrayOnFirebaseSnapshotChanges() {
     if (!playerLoading && playerSnaps) {
@@ -81,12 +82,12 @@ const Game: React.FC = () => {
 
         if (lastMoveSnapshot) {
           const lastMove = lastMoveSnapshot.val()
-          setLastMove(lastMove as GameMove)
+          setLastMove(lastMove as GameHistoryMove)
 
           if (lastMove.toType === 'mid') {
-            setSearchType(SearchType.person)
+            setSearchType(lastMove.correct ? SearchType.person : SearchType.movie)
           } else {
-            setSearchType(SearchType.movie)
+            setSearchType(lastMove.correct ? SearchType.movie : SearchType.person)
           }
         }
       }
@@ -150,6 +151,7 @@ const Game: React.FC = () => {
         currentPlayer={currentPlayer as string}
       />
       <GameMoveModal
+        lastMove={lastMove}
         makeChoice={makeChoice}
         searchType={searchType}
         isOpen={isMoveModalOpen}

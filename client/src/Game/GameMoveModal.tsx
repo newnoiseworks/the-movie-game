@@ -7,11 +7,13 @@ import {
   ModalHeader,
   ModalFooter,
   ModalBody,
+  Text,
   VStack,
 } from '@chakra-ui/react'
 
 import { searchForPeople, searchForMovie } from '../api'
 import GameSearchInput, { GameSearchInputRef } from './GameSearchInput'
+import {GameHistoryMove} from './Game'
 
 export enum SearchType {
   person,
@@ -24,10 +26,11 @@ interface GameMoveModalProps {
   onClose: () => void
   searchType: SearchType
   makeChoice: (id: number, choiceType: SearchType) => void
+  lastMove?: GameHistoryMove
 }
 
 const GameMoveModal: React.FC<GameMoveModalProps> = ({
-  isOpen, onClose, searchType, makeChoice
+  isOpen, onClose, searchType, makeChoice, lastMove
 }) => {
   const [personId, setPersonId] = useState<number>(-1)
   const [movieId, setMovieId] = useState<number>(-1)
@@ -35,6 +38,28 @@ const GameMoveModal: React.FC<GameMoveModalProps> = ({
 
   const personInput = useRef<GameSearchInputRef>(null)
   const movieInput = useRef<GameSearchInputRef>(null)
+
+  let moveString = ''
+
+  if (!lastMove || !lastMove.correct) {
+    switch (searchType) {
+      case SearchType.both:
+        moveString += 'Choose a movie or person to start!'
+        break
+      case SearchType.movie:
+        moveString += 'Choose a movie - any movie!'
+        break
+      case SearchType.person:
+        moveString += 'Choose a person from a movie!'
+        break
+    }
+  } else {
+    if (lastMove.toType === 'mid' && lastMove.correct) {
+      moveString += 'Choose a person from the movie ' + lastMove.name
+    } else {
+      moveString += 'Choose a movie containing ' + lastMove.name
+    }
+  }
 
   function setPersonFromInput(id: number) {
     setPersonId(id)
@@ -68,6 +93,7 @@ const GameMoveModal: React.FC<GameMoveModalProps> = ({
         <ModalHeader>Make Move</ModalHeader>
         <ModalBody>
           <VStack alignItems="flex-start">
+            <Text>{moveString}</Text>
             {
               (
                 searchType === SearchType.person ||

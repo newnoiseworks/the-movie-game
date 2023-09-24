@@ -7,11 +7,11 @@ import {
   Text
 } from '@chakra-ui/react'
 
-import { GameMove } from './Game'
+import { GameHistoryMove } from './Game'
 
 interface GameMoveJumbotronProps {
   playerName: string
-  lastMove?: GameMove
+  lastMove?: GameHistoryMove
 }
 
 const GameMoveJumbotron: React.FC<GameMoveJumbotronProps> = (({
@@ -22,11 +22,17 @@ const GameMoveJumbotron: React.FC<GameMoveJumbotronProps> = (({
 
   if (!lastMove) {
     currentMoveString += 'has to choose a movie or person to start!'
-  } else {
+  } else if (lastMove.correct) {
     if (lastMove.toType === 'mid') {
-      currentMoveString += 'has to choose a person from the movie ' + lastMove.mid
+      currentMoveString += 'has to choose a person from the movie ' + lastMove.name
     } else {
-      currentMoveString += 'has to choose a movie containing ' + lastMove.pid
+      currentMoveString += 'has to choose a movie containing ' + lastMove.name
+    }
+  } else if (!lastMove.correct) {
+    if (lastMove.toType === 'mid') {
+      currentMoveString += 'has to choose a movie - any movie!'
+    } else {
+      currentMoveString += 'has to choose a person from a movie!'
     }
   }
 
