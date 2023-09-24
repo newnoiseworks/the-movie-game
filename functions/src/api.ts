@@ -11,7 +11,7 @@ import {
   getMovieUrlById,
   getPersonUrlById,
 } from "./tmdb-api"
-import Game, {GameMove} from "./game";
+import Game, { GameMove } from "./game";
 
 const app = express()
 app.use(bodyParser.json())
@@ -150,20 +150,51 @@ app.post('/playerGameChoice', apiAuth, async (request, response) => {
   const game = await new Game(db).get(request.body.gid)
   const uuid = request.idToken!.uid
   const { mid, pid } = request.body
+  let isCorrect
 
   // TODO: Consider calling game.validatePlayer() and include the below there, and call that before isPersonInMovie... would consolidate things
   if (!Object.keys(game.players).find((playerKey) => game.players[playerKey].uuid === uuid)) {
     return respond403(response, "Player not joined onto this game")
   }
 
-  const isPersonInMovieBool = !!mid && !!pid ? await isPersonInMovie(mid, pid) : true
+  const move: any = { toType: request.body.toType }
 
-  const move: GameMove = { toType: request.body.toType }
+  // TODO: This is a bit gross. cleanup when there's a chance
+  if (mid && pid) {
+    const [
+      isPersonInMovieBool, movieInfo, personInfo
+    ] = await isPersonInMovie(
+      mid, pid, request.body.toType === 'pid'
+    )
+
+    isCorrect = isPersonInMovieBool
+
+    if (request.body.toType === 'pid') {
+      move.name = personInfo.name
+      move.photo = personInfo.profile_path
+    } else {
+      move.name = movieInfo.title
+      move.photo = movieInfo.poster_path
+    }
+  } else {
+    isCorrect = true
+
+    if (mid) {
+      const movieResponse = await axios.get(getMovieUrlById(mid, true))
+      move.name = movieResponse.data.title
+      move.photo = movieResponse.data.poster_path
+    } else {
+      const personResponse = await axios.get(getPersonUrlById(pid))
+      move.name = personResponse.data.name
+      move.photo = personResponse.data.profile_path
+    }
+  }
+
   if (!!mid) move.mid = mid
   if (!!pid) move.pid = pid
 
   try {
-    await game.playerMove(uuid, isPersonInMovieBool, move)
+    await game.playerMove(uuid, isCorrect, move as GameMove)
   } catch(err: any) {
     if (process.env.NODE_ENV !== 'test') {
       console.error(err.message)
@@ -175,13 +206,13 @@ app.post('/playerGameChoice', apiAuth, async (request, response) => {
   response.send()
 })
 
-async function isPersonInMovie(movieId: number, personId: number) {
-  let movieResponse
+async function isPersonInMovie(movieId: number, personId: number, getPersonInfo?: boolean) {
+  let movieResponse, personResponse
 
-  try {
-    movieResponse = await axios.get(getMovieUrlById(movieId, true))
-  } catch(err) {
-    throw err
+  movieResponse = await axios.get(getMovieUrlById(movieId, true))
+
+  if (getPersonInfo) {
+    personResponse = await axios.get(getPersonUrlById(personId))
   }
 
   const isPersonInMovieBool: boolean = (
@@ -192,7 +223,11 @@ async function isPersonInMovie(movieId: number, personId: number) {
     false
   )
 
-  return isPersonInMovieBool
+  return [
+    isPersonInMovieBool, 
+    movieResponse.data,
+    getPersonInfo && personResponse ? personResponse.data : undefined
+  ]
 }
 
 function respond403(response: express.Response, message: string) {

@@ -16,6 +16,8 @@ export interface GameMove {
   pid?: number
   toType: idType
   correct?: boolean
+  name: string
+  photo: string
 }
 
 export default class Game {

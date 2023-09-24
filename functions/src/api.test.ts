@@ -7,6 +7,7 @@ import admin from './fbase'
 import api from './api'
 import Game, {
   Player,
+  GameMove,
   MAX_SCORE,
   GameErrorMovieOrArtfulLiarAlreadyChosen,
   GameErrorPreviousMovieDoesntMatchCurrent,
@@ -658,6 +659,30 @@ describe("/playerGameChoice", () => {
 
     expect(response.status).toBe(403)
     expect(response.data).toContain(new GameErrorPreviousArtfulLiarDoesntMatchCurrent().message)
+  })
+
+  test("movie choices track movie name and supply image when available", async () => {
+    await axios.post(`/playerGameChoice`, {
+      pid: ingridBergmanId,
+      toType: 'pid',
+      gid
+    }, getAuthHeaderFor(0))
+
+    await axios.post('/playerGameChoice', {
+      pid: ingridBergmanId,
+      mid: filmGaslightId,
+      toType: 'mid',
+      gid
+    }, getAuthHeaderFor(1))
+
+    const history: { [key: string]: GameMove } = (await db.ref(`games/${gid}/history`).once("value")).val()
+    const firstMove: GameMove = history[Object.keys(history)[0]]
+    const secondMove: GameMove = history[Object.keys(history)[1]]
+
+    expect(firstMove.name).toEqual("Ingrid Bergman")
+    expect(secondMove.name).toEqual("Gaslight")
+    expect(firstMove.photo).toBeTruthy()
+    expect(secondMove.photo).toBeTruthy()
   })
 })
 
