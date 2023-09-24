@@ -2,15 +2,20 @@ import React, { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { useList, useObjectVal } from 'react-firebase-hooks/database'
 import {
+  Card,
+  CardBody,
   Container,
   useDisclosure,
   Text,
+  HStack,
+  Heading,
 } from '@chakra-ui/react'
 
 import { getFromDB } from '../firebase'
 import {getUID, playerGameChoice} from '../api'
 import GamePlayerList from './GamePlayerList'
 import GameMoveModal, { SearchType } from './GameMoveModal'
+import GameMoveJumbotron from './GameMoveJumbotron'
 
 export interface GamePlayer {
   uuid: string
@@ -20,7 +25,7 @@ export interface GamePlayer {
   ready?: boolean
 }
 
-interface GameMove {
+export interface GameMove {
   mid?: number
   pid?: number
   toType: 'mid' | 'pid'
@@ -36,7 +41,9 @@ const Game: React.FC = () => {
   const { isOpen: isMoveModalOpen, onOpen: onMoveModalOpen, onClose: onMoveModalClose } = useDisclosure()
 
   const [ players, setPlayers ] = useState<GamePlayer[]>([])
+  const [ currentPlayerName, setCurrentPlayerName ] = useState<string>('')
   const [ searchType, setSearchType ] = useState<SearchType>(SearchType.both)
+  const [ lastMove, setLastMove ] = useState<GameMove>()
 
   useEffect(function setupPlayerArrayOnFirebaseSnapshotChanges() {
     if (!playerLoading && playerSnaps) {
@@ -52,13 +59,21 @@ const Game: React.FC = () => {
 
       setPlayers(_players)
     }
-  }, [playerLoading, playerSnaps, setPlayers])
+  }, [playerLoading, playerSnaps])
+
+  useEffect(function setupCurrentPlayerNameFromPlayers() {
+    if (currentPlayer && players && players.length > 0) {
+      const player = players.find((p) => p.uuid === currentPlayer)
+      if (player) {
+        setCurrentPlayerName(player.name)
+      }
+    }
+  }, [players, currentPlayer])
 
   useEffect(function setupGameMoveModalOnCurrentPlayerChanges() {
-    if (currentPlayer && history && getUID() === currentPlayer) {
+    if (history) {
       if (history.length === 0) {
         setSearchType(SearchType.both)
-        onMoveModalOpen()
       } else {
         const historyKeys = history.map((h) => h.key).sort()
         const lastMoveKey = historyKeys[historyKeys.length - 1]
@@ -66,22 +81,25 @@ const Game: React.FC = () => {
 
         if (lastMoveSnapshot) {
           const lastMove = lastMoveSnapshot.val()
-
-          console.log(lastMove)
+          setLastMove(lastMove as GameMove)
 
           if (lastMove.toType === 'mid') {
             setSearchType(SearchType.person)
           } else {
             setSearchType(SearchType.movie)
           }
-
-          onMoveModalOpen()
         }
       }
+    }
+  }, [history])
+
+  useEffect(function setupMoveModal() {
+    if (currentPlayer && getUID() === currentPlayer) {
+      onMoveModalOpen()
     } else {
       onMoveModalClose()
     }
-  }, [currentPlayer, history, onMoveModalOpen, onMoveModalClose])
+  }, [currentPlayer, onMoveModalOpen, onMoveModalClose])
 
   async function makeChoice(id: number, choice: SearchType) {
     const data: GameMove = {
@@ -94,53 +112,49 @@ const Game: React.FC = () => {
       data.pid = id
     }
 
-    if (history) {
-      const historyKeys = history.map((h) => h.key).sort()
-      const lastMoveKey = historyKeys[historyKeys.length - 1]
-      const lastMoveSnapshot = history.find((h) => h.key === lastMoveKey)
-
-      if (lastMoveSnapshot) {
-        const lastMove = lastMoveSnapshot.val()
-
-        if (lastMove.correct) {
-          if (choice === SearchType.movie) {
-            data.pid = lastMove.pid
-          } else {
-            data.mid = lastMove.mid
-          }
-        }
+    if (history && lastMove && lastMove.correct) {
+      if (choice === SearchType.movie) {
+        data.pid = lastMove.pid
+      } else {
+        data.mid = lastMove.mid
       }
     }
 
     try {
       await playerGameChoice(data, gameId!)
-    } catch(err) {
-      console.error(err)
+    } catch(err: any) {
+      if (err.response.data.includes('already been chosen')) {
+        alert("Already chosen")
+      } else {
+        console.error(err)
+      }
     }
   }
 
   return (
-    <Container>
-      <Container sx={{ mb: 6 }}>
-        {gameNameLoading && "Loading game..."}
-        {gameNameError && `Error loading game... ${gameNameError}`}
-        <Text variant="h1" fontSize="3xl" fontWeight="bold">
-          {gameName}
-        </Text>
-        <Text variant="h3" fontSize="sm">
-          Lobby - The Movie Game
-        </Text>
-        <GamePlayerList
-          players={players}
-          currentPlayer={currentPlayer as string}
-        />
-        <GameMoveModal 
-          makeChoice={makeChoice}
-          searchType={searchType}
-          isOpen={isMoveModalOpen} 
-          onClose={onMoveModalClose} 
-        />
-      </Container>
+    <Container sx={{ mb: 6 }}>
+      {gameNameLoading && "Loading game..."}
+      {gameNameError && `Error loading game... ${gameNameError}`}
+      <Text variant="h1" fontSize="3xl" fontWeight="bold">
+        {gameName}
+      </Text>
+      <Text variant="h3" fontSize="sm">
+        Lobby - The Movie Game
+      </Text>
+      <GameMoveJumbotron
+        playerName={currentPlayerName}
+        lastMove={lastMove}
+      />
+      <GamePlayerList
+        players={players}
+        currentPlayer={currentPlayer as string}
+      />
+      <GameMoveModal
+        makeChoice={makeChoice}
+        searchType={searchType}
+        isOpen={isMoveModalOpen}
+        onClose={onMoveModalClose}
+      />
     </Container>
   )
 }
