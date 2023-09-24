@@ -196,6 +196,10 @@ export default class Game {
       this.sortedKeys(this.history)[this.sortedKeys(this.history).length - 1]
     ]
 
+    if (lastMove && !lastMove.correct) {
+      return
+    }
+
     if (move.toType === 'pid') {
       if (this.sortedKeys(this.history).find(
         (moveKey) => {

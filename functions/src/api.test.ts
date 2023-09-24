@@ -415,13 +415,14 @@ describe("/readyToPlay", () => {
 describe("/playerGameChoice", () => {
   let gid: string | null
   let game: Game
+  const filmSideways = 9675
   const filmLoserId = 10642
   const menaSuvariId = 8211
   const taraReidId = 1234
 
   const filmGaslightId = 13528 // Correct Reference!
   const filmCasablancaId = 289
-  const filmMurderExpressId = 392044
+  const filmMurderExpressId = 4176
   const humphreyBogartId = 4110
   const ingridBergmanId = 4111
 
@@ -684,5 +685,57 @@ describe("/playerGameChoice", () => {
     expect(firstMove.photo).toBeTruthy()
     expect(secondMove.photo).toBeTruthy()
   })
-})
 
+  test("player can choose whatever movie after an incorrect movie has been chosen", async () => {
+    await axios.post(`/playerGameChoice`, {
+      pid: ingridBergmanId,
+      toType: 'pid',
+      gid
+    }, getAuthHeaderFor(0))
+
+    await axios.post('/playerGameChoice', {
+      pid: ingridBergmanId,
+      mid: filmSideways,
+      toType: 'mid',
+      gid
+    }, getAuthHeaderFor(1))
+
+    // technically Bogart was in Casablanca, which is a match... but,
+    // the last move was the artful liar Ingrid Bergman, so this should result in a 403
+    // with a relevant error message in the reponse
+    const response = await axios.post('/playerGameChoice', {
+      mid: filmLoserId,
+      toType: 'mid',
+      gid
+    }, getAuthHeaderFor(0))
+
+    expect(response.status).toBe(200)
+  })
+
+  test("player can choose whatever person after an incorrect person has been chosen", async () => {
+    await axios.post(`/playerGameChoice`, {
+      pid: filmSideways,
+      toType: 'mid',
+      gid
+    }, getAuthHeaderFor(0))
+
+    await axios.post('/playerGameChoice', {
+      pid: ingridBergmanId,
+      mid: filmSideways,
+      toType: 'pid',
+      gid
+    }, getAuthHeaderFor(1))
+
+    // technically Bogart was in Casablanca, which is a match... but,
+    // the last move was the artful liar Ingrid Bergman, so this should result in a 403
+    // with a relevant error message in the reponse
+    const response = await axios.post('/playerGameChoice', {
+      pid: humphreyBogartId,
+      toType: 'pid',
+      gid
+    }, getAuthHeaderFor(0))
+
+    expect(response.status).toBe(200)
+  })
+})
+  
