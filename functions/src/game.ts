@@ -167,11 +167,6 @@ export default class Game {
       player.score = score
     }
 
-    const playerKeyIdx = this.sortedKeys(this.players).findIndex((k) => k === playerKey)
-    const nextPlayerUuid = this.players[this.sortedKeys(this.players)[
-      playerKeyIdx + 1 === this.sortedKeys(this.players).length ? 0 : playerKeyIdx + 1
-    ]].uuid
-
     const gameRefHistory = this.db.ref(`games/${this.gid}/history`)
     const gameMoveHistory: GameMoveHistory = {
       ...move,
@@ -181,6 +176,8 @@ export default class Game {
 
     gameRefHistory.push(gameMoveHistory)
 
+    const nextPlayerUuid = this.getNextPlayer(playerKey)
+
     const [_updateCurrentPlayer, gameRefHistoryObject] = await Promise.all([
       this.db.ref(`games/${this.gid}/currentPlayer`).set(nextPlayerUuid),
       gameRefHistory.once("value")
@@ -188,6 +185,22 @@ export default class Game {
 
     this.history = gameRefHistoryObject.val()
     this.currentPlayer = nextPlayerUuid
+  }
+
+  getNextPlayer(formerCurrentPlayerKey: string): string {
+    const playerKeyIdx = this.sortedKeys(this.players).findIndex((k) => k === formerCurrentPlayerKey)
+    
+    const nextPlayerKey = this.sortedKeys(this.players)[
+      playerKeyIdx + 1 === this.sortedKeys(this.players).length ? 0 : playerKeyIdx + 1
+    ]
+
+    const player = this.players[nextPlayerKey]
+
+    if (player.score && player.score === MAX_SCORE) {
+      return this.getNextPlayer(nextPlayerKey)
+    }
+
+    return player.uuid
   }
 
   validatePlayer(player: Player) {

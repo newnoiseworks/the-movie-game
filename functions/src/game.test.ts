@@ -273,6 +273,25 @@ describe("Game#playerMove", () => {
     expect(game.currentPlayer).toBe(uuid2)
   })
 
+  test("if player two has hit max score, skip from player one to three when assigning currentPlayer", async() => {
+    const playerKey = Object.keys(game.players).find((k) => game.players[k].uuid === uuid2)
+
+    await db.ref(`games/${gameKey}/players/${playerKey}/score`).set(MAX_SCORE)
+
+    await game.get(game.gid!)
+
+    let gameObj = (await db.ref(`games/${gameKey}`).once("value")).val()
+    const firstCurrentPlayer = gameObj.currentPlayer
+    expect(firstCurrentPlayer).toBe(uuid)
+
+    await game.playerMove(uuid, false, { mid: mid1, pid: pid1, toType: 'pid', name: 'Actor Name', photo: 'url' })
+
+    gameObj = (await db.ref(`games/${gameKey}`).once("value")).val()
+    const secondCurrentPlayer = gameObj.currentPlayer
+
+    expect(secondCurrentPlayer).toBe(uuid3)
+  })
+
   test("if player isn't currentPlayer on DB object, don't do anything", async () => {
     await game.get(game.gid!)
 
