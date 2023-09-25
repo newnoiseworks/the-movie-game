@@ -49,12 +49,12 @@ const GameLobby: React.FC = () => {
 
       if (
         !isOpen && !_players.find((p) => p.uuid === getUID()) &&
-        !(_players.length > 1 && _players.find((p) => !p.ready))
+        !gameLaunching
       ) {
         onOpen()
       }
     }
-  }, [playerLoading, playerSnaps, setPlayers, isOpen, onOpen])
+  }, [playerLoading, playerSnaps, isOpen, onOpen, gameLaunching])
 
   useEffect(function startCountdownIfAllPlayersAreReady() {
     if (players.length > 1 && !players.find((p) => !p.ready)) {
