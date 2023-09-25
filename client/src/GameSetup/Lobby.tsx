@@ -18,8 +18,7 @@ import LobbyPlayerList, { LobbyPlayer } from './LobbyPlayerList'
 import LobbyJoinModal from './LobbyJoinModal'
 
 const GameLobby: React.FC = () => {
-  // eslint-disable-next-line
-  const [ _copyValue, copy ] = useCopyToClipboard()
+  const [ , copy ] = useCopyToClipboard()
   const [count, { startCountdown, resetCountdown  }] = useCountdown({ countStart: 10 })
   const navigate = useNavigate()
   const { gameId } = useParams()
