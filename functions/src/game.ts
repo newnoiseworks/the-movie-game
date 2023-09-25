@@ -12,18 +12,22 @@ export interface Player {
 type idType = 'mid' | 'pid'
 
 export interface GameMove {
-  mid?: number
-  pid?: number
   toType: idType
-  correct?: boolean
   name: string
   photo: string
+  mid?: number
+  pid?: number
+}
+
+export interface GameMoveHistory extends GameMove {
+  correct: boolean
+  player: Player
 }
 
 export default class Game {
   db: admin.database.Database
   players: { [key: string]: Player } = {}
-  history: { [key: string]: GameMove } = {}
+  history: { [key: string]: GameMoveHistory } = {}
 
   currentPlayer?: string
   createdOn?: number
@@ -150,9 +154,6 @@ export default class Game {
     isCorrect: boolean,
     move: GameMove
   ) {
-    // TODO: This could be better passed into the game move itself as it's evaluated outside of this class, would need to adjust tests
-    move.correct = isCorrect
-
     const playerKey = this.sortedKeys(this.players).find((key) => this.players[key].uuid === uuid)!
     const player = this.players[playerKey]
 
@@ -161,7 +162,9 @@ export default class Game {
     if (isCorrect) {
       this.validateMove(move)
     } else {
+      const score = (player.score || 0) + 1
       await this.db.ref(`games/${this.gid}/players/${playerKey}/score`).set((player.score || 0) + 1)
+      player.score = score
     }
 
     const playerKeyIdx = this.sortedKeys(this.players).findIndex((k) => k === playerKey)
@@ -170,7 +173,13 @@ export default class Game {
     ]].uuid
 
     const gameRefHistory = this.db.ref(`games/${this.gid}/history`)
-    gameRefHistory.push(move)
+    const gameMoveHistory: GameMoveHistory = {
+      ...move,
+      correct: isCorrect,
+      player
+    }
+
+    gameRefHistory.push(gameMoveHistory)
 
     const [_updateCurrentPlayer, gameRefHistoryObject] = await Promise.all([
       this.db.ref(`games/${this.gid}/currentPlayer`).set(nextPlayerUuid),

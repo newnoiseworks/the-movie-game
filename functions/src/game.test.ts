@@ -1,6 +1,7 @@
 import admin from './fbase'
 
 import Game, {
+  GameMoveHistory,
   GameErrorCantMoveWhenNotCurrentPlayer,
   GameErrorCantMoveWithMaxScore,
   GameErrorMovieOrArtfulLiarAlreadyChosen,
@@ -432,7 +433,6 @@ describe("Game#playerMove", () => {
   })
 
   test("player cannot choose an artful liar incorrectly that has already been picked, and the incorrect choice should take precedence such that the score and current player is adjusted", async () => {
-
     let gameObj = (await db.ref(`games/${gameKey}`).once("value")).val() as Game
     let thirdUser = gameObj.players[Object.keys(gameObj.players)[2]]!
     const firstCurrentPlayer = gameObj.currentPlayer
@@ -475,4 +475,31 @@ describe("Game#playerMove", () => {
     expect(game.currentPlayer).toBe(uuid)
   })
 
+  test("player object sans ready are stored on history object", async () => {
+    await game.get(game.gid!)
+
+    await game.playerMove(uuid, true, {
+      pid: pid2,
+      toType: 'pid',
+      name: 'Actor Name',
+      photo: 'url'
+    })
+
+    await game.playerMove(uuid2, false, {
+      pid: pid2,
+      mid: mid2,
+      toType: 'mid',
+      name: 'Movie Name',
+      photo: 'url'
+    })
+
+    const gameObj = (await db.ref(`games/${gameKey}`).once("value")).val()
+    const history: { [key: string]: GameMoveHistory } = gameObj.history
+    const lastMove = history[Object.keys(history)[Object.keys(history).length - 1]]
+
+    expect(lastMove.player.uuid).toEqual(uuid2)
+    expect(lastMove.player.score).toBe(1)
+    expect(lastMove.player.name).toBe(name2)
+    expect(game.currentPlayer).toBe(uuid3)
+  })
 })
