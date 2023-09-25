@@ -15,6 +15,8 @@ interface GamePlayerListProps {
   currentPlayer: string
 }
 
+const MAX_SCORE = 'MOVIE'.split('').length
+
 export function getScoreString(player: GamePlayer) {
   let scoreString = "*****"
   const gameWord = 'MOVIE'.split('')
@@ -35,11 +37,14 @@ export function getScoreString(player: GamePlayer) {
 }
 
 const PlayerRow: React.FC<{ player: GamePlayer, currentPlayer: string }> = ({ player, currentPlayer }) => {
+  const score = player.score || 0
+  const lost = score >= MAX_SCORE
 
   return <Tr key={player.key}>
     <Td>
-      {player.name}
-      {currentPlayer === player.uuid && 'waiting for move'}
+      <em style={{ textDecoration: lost ? "line-through" : '' }}>{player.name}</em>
+      {currentPlayer === player.uuid && ' waiting for move'}
+      {lost && ' is out!'}
     </Td>
     <Td textAlign="right">
       {getScoreString(player)}
@@ -50,8 +55,8 @@ const PlayerRow: React.FC<{ player: GamePlayer, currentPlayer: string }> = ({ pl
 const GamePlayerList: React.FC<GamePlayerListProps> = ({
   players = [],
   currentPlayer
-}) => {
-  return <TableContainer>
+}) => (
+  <TableContainer>
     <Table variant="striped" colorScheme="purple">
       <Thead>
         <Tr>
@@ -70,7 +75,7 @@ const GamePlayerList: React.FC<GamePlayerListProps> = ({
       </Tbody>
     </Table>
   </TableContainer>
-}
+)
 
 export default GamePlayerList
 
