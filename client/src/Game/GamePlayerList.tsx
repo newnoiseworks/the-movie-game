@@ -15,7 +15,7 @@ interface GamePlayerListProps {
   currentPlayer: string
 }
 
-const PlayerRow: React.FC<{ player: GamePlayer, currentPlayer: string }> = ({ player, currentPlayer }) => {
+export function getScoreString(player: GamePlayer) {
   let scoreString = "*****"
   const gameWord = 'MOVIE'.split('')
 
@@ -31,13 +31,18 @@ const PlayerRow: React.FC<{ player: GamePlayer, currentPlayer: string }> = ({ pl
     }
   }
 
+  return scoreString
+}
+
+const PlayerRow: React.FC<{ player: GamePlayer, currentPlayer: string }> = ({ player, currentPlayer }) => {
+
   return <Tr key={player.key}>
     <Td>
       {player.name}
       {currentPlayer === player.uuid && 'waiting for move'}
     </Td>
     <Td textAlign="right">
-      {scoreString}
+      {getScoreString(player)}
     </Td>
   </Tr>
 }

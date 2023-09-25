@@ -31,6 +31,7 @@ export interface GameMove {
 export interface GameHistoryMove extends GameMove {
   name: string
   photo: string
+  player: GamePlayer
 }
 
 const Game: React.FC = () => {
