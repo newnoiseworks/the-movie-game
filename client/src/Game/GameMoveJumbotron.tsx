@@ -24,6 +24,7 @@ const GameMoveJumbotron: React.FC<GameMoveJumbotronProps> = (({
   const [ currentMoveString, setCurrentMoveString ] = useState<string>('')
   const [ lastMoveString, setLastMoveString ] = useState<string>('')
   const [ lastMoveScoreString, setLastMoveScoreString ] = useState<string>('')
+  const [ lastMoveMaxScoreHit, setLastMoveMaxScoreHit ] = useState<boolean>(false)
 
   const secondToLastMoveRef = useRef<GameHistoryMove>()
 
@@ -39,6 +40,9 @@ const GameMoveJumbotron: React.FC<GameMoveJumbotronProps> = (({
 
     secondToLastMoveRef.current = lastMove
 
+    const scoreString = `Score: ${getScoreString(lastMove.player)}`
+    setLastMoveScoreString(scoreString)
+
     let lastMoveString = lastMove.player.name + ' is '
 
     if (lastMove.correct) {
@@ -47,10 +51,11 @@ const GameMoveJumbotron: React.FC<GameMoveJumbotronProps> = (({
       lastMoveString += 'incorrect!'
     }
 
-    const scoreString = `Score: ${getScoreString(lastMove.player)}`
+    // TODO: Might be better to check against MAX SCORE and centralize that
+    // as an int, somewhere, someday, maybe
+    setLastMoveMaxScoreHit(scoreString.indexOf('*') === -1)
 
     setLastMoveString(lastMoveString)
-    setLastMoveScoreString(scoreString)
     setIsMoveAlertOpen(true)
 
     setTimeout(() => setIsMoveAlertOpen(false), 2500)
@@ -93,7 +98,7 @@ const GameMoveJumbotron: React.FC<GameMoveJumbotronProps> = (({
         offsetY={-20}
       >
         <Box
-          bg="purple.500"
+          bg={lastMoveMaxScoreHit ? "red.500" : "purple.500"}
           rounded="md"
           shadow="md"
           sx={{
@@ -105,6 +110,9 @@ const GameMoveJumbotron: React.FC<GameMoveJumbotronProps> = (({
         >
           <Text>{lastMoveString}</Text>
           <Text>{lastMoveScoreString}</Text>
+          {lastMoveMaxScoreHit && lastMove &&
+            <Text>{lastMove.player.name} is knocked out of the game!</Text>
+          }
         </Box>
       </SlideFade>
     </CardBody>

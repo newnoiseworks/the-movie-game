@@ -8,7 +8,7 @@ import {
 } from '@chakra-ui/react'
 
 import { getFromDB } from '../firebase'
-import {getUID, playerGameChoice} from '../api'
+import { getUID, playerGameChoice } from '../api'
 import GamePlayerList from './GamePlayerList'
 import GameMoveModal, { SearchType } from './GameMoveModal'
 import GameMoveJumbotron from './GameMoveJumbotron'
