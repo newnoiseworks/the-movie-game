@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import {
   Box,
   Card,
@@ -10,7 +10,7 @@ import {
 } from '@chakra-ui/react'
 
 import { GameHistoryMove } from './Game'
-import {getScoreString} from './GamePlayerList'
+import { getScoreString } from './GamePlayerList'
 
 interface GameMoveJumbotronProps {
   playerName: string
@@ -25,11 +25,19 @@ const GameMoveJumbotron: React.FC<GameMoveJumbotronProps> = (({
   const [ lastMoveString, setLastMoveString ] = useState<string>('')
   const [ lastMoveScoreString, setLastMoveScoreString ] = useState<string>('')
 
+  const secondToLastMoveRef = useRef<GameHistoryMove>()
+
   useEffect(function openMoveAlertOnLastMoveChange() {
-    if (!lastMove) {
+    if (
+      !lastMove ||
+      (secondToLastMoveRef.current && !secondToLastMoveRef.current.correct)
+    ) {
       setIsMoveAlertOpen(false)
+      secondToLastMoveRef.current = lastMove
       return
     }
+
+    secondToLastMoveRef.current = lastMove
 
     let lastMoveString = lastMove.player.name + ' is '
 
