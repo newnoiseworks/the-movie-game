@@ -6,14 +6,17 @@ import {
   PopoverBody,
   PopoverTrigger,
   Spinner,
+  HStack,
   Input,
   InputGroup,
-  InputRightElement
+  InputRightElement,
+  Text
 } from '@chakra-ui/react'
 
 interface SearchResult {
   id: number
   name: string
+  photo: string
 }
 
 export interface GameSearchInputRef {
@@ -49,7 +52,8 @@ const GameSearchInput: React.ForwardRefRenderFunction<
 
     const _searchResults = (await searchFn(value)).results.map((result: any) => ({
       id: result.id,
-      name: result.name
+      name: result.name,
+      photo: result.profile_path || result.poster_path
     }))
 
     setLoading(false)
@@ -91,21 +95,32 @@ const GameSearchInput: React.ForwardRefRenderFunction<
       </PopoverTrigger>
       <PopoverContent>
         <PopoverBody>
-        {searchResults.map((result) => (
-          <div
-            key={result.id}
-            onClick={() => {
-              if (inputRef.current) {
-                inputRef.current.value = result.name
-              }
+        {searchResults.map((result) => {
+          return (
+            <HStack
+              key={result.id}
+              onClick={() => {
+                if (inputRef.current) {
+                  inputRef.current.value = result.name
+                }
 
-              setSearchResults([])
-              setIdFn(result.id)
-            }}
-          >
-            {result.name}
-          </div>
-        ))}</PopoverBody>
+                setSearchResults([])
+                setIdFn(result.id)
+              }}
+            >
+              {
+                result.photo &&
+                <img
+                  src={`https://image.tmdb.org/t/p/w500/${result.photo}`}
+                  width={50}
+                  alt={result.name}
+                />
+              }
+              <Text>{result.name}</Text>
+            </HStack>
+          )
+        })}
+        </PopoverBody>
       </PopoverContent>
     </Popover>
   )
