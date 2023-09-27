@@ -15,7 +15,7 @@ interface GamePlayerListProps {
   currentPlayer: string
 }
 
-const MAX_SCORE = 'MOVIE'.split('').length
+export const MAX_SCORE = 'MOVIE'.split('').length
 
 export function getScoreString(player: GamePlayer) {
   let scoreString = "*****"

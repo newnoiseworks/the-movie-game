@@ -9,18 +9,20 @@ import {
   Text
 } from '@chakra-ui/react'
 
-import { GameHistoryMove } from './Game'
-import { getScoreString } from './GamePlayerList'
+import { GameHistoryMove, GamePlayer } from './Game'
+import { getScoreString, MAX_SCORE } from './GamePlayerList'
 
 interface GameMoveJumbotronProps {
   playerName: string
   lastMove?: GameHistoryMove
+  finalWinner?: GamePlayer
 }
 
 const GameMoveJumbotron: React.FC<GameMoveJumbotronProps> = (({
-  playerName, lastMove
+  playerName, lastMove, finalWinner
 }) => {
   const [ isMoveAlertOpen, setIsMoveAlertOpen ] = useState<boolean>(false)
+  const [ isFinalWinnerAlertOpen, setFinalWinnerAlertOpen ] = useState<boolean>(false)
   const [ currentMoveString, setCurrentMoveString ] = useState<string>('')
   const [ lastMoveString, setLastMoveString ] = useState<string>('')
   const [ lastMoveScoreString, setLastMoveScoreString ] = useState<string>('')
@@ -51,15 +53,21 @@ const GameMoveJumbotron: React.FC<GameMoveJumbotronProps> = (({
       lastMoveString += 'incorrect!'
     }
 
-    // TODO: Might be better to check against MAX SCORE and centralize that
-    // as an int, somewhere, someday, maybe
-    setLastMoveMaxScoreHit(scoreString.indexOf('*') === -1)
+    setLastMoveMaxScoreHit(lastMove.player.score === MAX_SCORE)
 
     setLastMoveString(lastMoveString)
     setIsMoveAlertOpen(true)
 
-    setTimeout(() => setIsMoveAlertOpen(false), 2500)
-  }, [lastMove])
+    setTimeout(() => {
+      setIsMoveAlertOpen(false)
+
+      if (finalWinner) {
+        setTimeout(() => {
+          setFinalWinnerAlertOpen(true)
+        }, 2500)
+      }
+    }, 2500)
+  }, [lastMove, finalWinner])
 
   useEffect(function updateCurrentMoveStringOnLastMoveAndPlayerNameChange() {
     let currentMoveString = playerName + ' '
@@ -82,6 +90,7 @@ const GameMoveJumbotron: React.FC<GameMoveJumbotronProps> = (({
 
     setCurrentMoveString(currentMoveString)
   }, [lastMove, playerName])
+
 
   return <Card sx={{ mt: 6, mb: 4 }}>
     <CardBody>
@@ -115,6 +124,31 @@ const GameMoveJumbotron: React.FC<GameMoveJumbotronProps> = (({
           }
         </Box>
       </SlideFade>
+      {
+        isFinalWinnerAlertOpen && finalWinner &&
+        <SlideFade
+          in={!!finalWinner}
+          offsetY={-20}
+        >
+          <Box
+            bg="green.500"
+            rounded="md"
+            shadow="md"
+            sx={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '100%',
+            }}
+          >
+            <Text>{finalWinner.name}</Text>
+            <Text>Final Score: {getScoreString(finalWinner)}</Text>
+            {!finalWinner.score &&
+              <Text>Flawless Victory!</Text>
+            }
+          </Box>
+        </SlideFade>
+      }
     </CardBody>
   </Card>
 })

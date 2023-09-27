@@ -9,8 +9,8 @@ import {
 
 import { getFromDB } from '../firebase'
 import { getUID, playerGameChoice } from '../api'
-import GamePlayerList from './GamePlayerList'
-import GameMoveModal, { SearchType } from './GameMoveModal'
+import GamePlayerList, { MAX_SCORE } from './GamePlayerList'
+import GameMoveModal, {SearchType} from './GameMoveModal'
 import GameMoveJumbotron from './GameMoveJumbotron'
 
 export interface GamePlayer {
@@ -43,6 +43,7 @@ const Game: React.FC = () => {
   const { isOpen: isMoveModalOpen, onOpen: onMoveModalOpen, onClose: onMoveModalClose } = useDisclosure()
 
   const [ players, setPlayers ] = useState<GamePlayer[]>([])
+  const [ finalWinner, setFinalWinner ] = useState<GamePlayer>()
   const [ currentPlayerName, setCurrentPlayerName ] = useState<string>('')
   const [ searchType, setSearchType ] = useState<SearchType>(SearchType.both)
   const [ lastMove, setLastMove ] = useState<GameHistoryMove>()
@@ -95,13 +96,24 @@ const Game: React.FC = () => {
     }
   }, [history])
 
+  useEffect(function setFinalWinnerOnPlayerChanges() {
+    if (players) {
+      const playersLeft = players.filter((p) => (p.score || 0) < MAX_SCORE)
+
+      if (playersLeft.length === 1) {
+        setFinalWinner(playersLeft[0])
+      }
+    }
+
+  }, [players])
+
   useEffect(function setupMoveModal() {
-    if (currentPlayer && getUID() === currentPlayer) {
+    if (currentPlayer && getUID() === currentPlayer && !finalWinner) {
       onMoveModalOpen()
     } else {
       onMoveModalClose()
     }
-  }, [currentPlayer, onMoveModalOpen, onMoveModalClose])
+  }, [currentPlayer, onMoveModalOpen, onMoveModalClose, finalWinner])
 
   async function makeChoice(id: number, choice: SearchType) {
     const data: GameMove = {
@@ -146,6 +158,7 @@ const Game: React.FC = () => {
       <GameMoveJumbotron
         playerName={currentPlayerName}
         lastMove={lastMove}
+        finalWinner={finalWinner}
       />
       <GamePlayerList
         players={players}
