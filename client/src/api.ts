@@ -78,7 +78,7 @@ async function searchForMovie(name: string) {
 
   response.data.results = response.data.results.map((result: any) => ({
     ...result,
-    name: result.title
+    name: `${result.title} - ${result.release_date.split('-')[0]}`
   }))
 
   return response.data
