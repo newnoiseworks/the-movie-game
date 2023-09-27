@@ -682,8 +682,8 @@ describe("/playerGameChoice", () => {
 
     expect(firstMove.name).toEqual("Ingrid Bergman")
     expect(secondMove.name).toEqual("Gaslight")
-    expect(firstMove.photo).toBeTruthy()
-    expect(secondMove.photo).toBeTruthy()
+    expect(typeof firstMove.photo).toBe("string")
+    expect(typeof secondMove.photo).toBe("string")
   })
 
   test("player can choose whatever movie after an incorrect movie has been chosen", async () => {
