@@ -65,7 +65,7 @@ function App() {
           css={{ minHeight: '100vh' }}
           direction="column"
         >
-          <Container width="100%" flexGrow={1}>
+          <Container width="100%" maxWidth="100%" flexGrow={1}>
             <RouterProvider router={router} />
           </Container>
           <Box

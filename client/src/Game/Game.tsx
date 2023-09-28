@@ -5,7 +5,10 @@ import {
   Container,
   useDisclosure,
   Text,
+  Flex,
+  Box,
 } from '@chakra-ui/react'
+import { uniq } from 'underscore'
 
 import { getFromDB } from '../firebase'
 import { getUID, playerGameChoice } from '../api'
@@ -146,33 +149,52 @@ const Game: React.FC = () => {
   }
 
   return (
-    <Container sx={{ mb: 6 }}>
-      {gameNameLoading && "Loading game..."}
-      {gameNameError && `Error loading game... ${gameNameError}`}
-      <Text variant="h1" fontSize="3xl" fontWeight="bold">
-        {gameName}
-      </Text>
-      <Text variant="h3" fontSize="sm">
-        Lobby - The Movie Game
-      </Text>
-      <GameMoveJumbotron
-        playerName={currentPlayerName}
-        lastMove={lastMove}
-        finalWinner={finalWinner}
-      />
-      <GamePlayerList
-        players={players}
-        currentPlayer={currentPlayer as string}
-      />
-      <GameMoveModal
-        lastMove={lastMove}
-        makeChoice={makeChoice}
-        searchType={searchType}
-        isOpen={isMoveModalOpen}
-        onClose={onMoveModalClose}
-        errorMessage={errorMessage}
-      />
-    </Container>
+    <Flex>
+      <Box sx={{ mb: 6, mr: 6 }} flex="1">
+        {gameNameLoading && "Loading game..."}
+        {gameNameError && `Error loading game... ${gameNameError}`}
+        <Text variant="h1" fontSize="3xl" fontWeight="bold">
+          {gameName}
+        </Text>
+        <Text variant="h3" fontSize="sm">
+          Lobby - The Movie Game
+        </Text>
+        <GameMoveJumbotron
+          playerName={currentPlayerName}
+          lastMove={lastMove}
+          finalWinner={finalWinner}
+        />
+        <GamePlayerList
+          players={players}
+          currentPlayer={currentPlayer as string}
+        />
+        <GameMoveModal
+          lastMove={lastMove}
+          makeChoice={makeChoice}
+          searchType={searchType}
+          isOpen={isMoveModalOpen}
+          onClose={onMoveModalClose}
+          errorMessage={errorMessage}
+        />
+      </Box>
+      {history && history.length > 0 &&
+        <Box>
+          <Text fontSize="lg">Choice History</Text>
+          {history && uniq(history, h => h.key).map((h) => {
+            const move = h.val() as GameHistoryMove
+            return <Text fontSize={"xs"}>
+              {move.player.name}
+              {move.correct ? ' correctly ' : ' incorrectly '}
+              {move.toType === 'mid' ? ' chose movie: ' : ' chose person: '}
+              <br />
+              <em>{move.name}</em>
+              <hr />
+              <br />
+            </Text>
+          })}
+        </Box>
+      }
+    </Flex>
   )
 }
 
