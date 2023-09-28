@@ -26,11 +26,12 @@ interface GameMoveModalProps {
   onClose: () => void
   searchType: SearchType
   makeChoice: (id: number, choiceType: SearchType) => void
+  errorMessage?: string
   lastMove?: GameHistoryMove
 }
 
 const GameMoveModal: React.FC<GameMoveModalProps> = ({
-  isOpen, onClose, searchType, makeChoice, lastMove
+  errorMessage, isOpen, onClose, searchType, makeChoice, lastMove
 }) => {
   const [personId, setPersonId] = useState<number>(-1)
   const [movieId, setMovieId] = useState<number>(-1)
@@ -104,6 +105,7 @@ const GameMoveModal: React.FC<GameMoveModalProps> = ({
                 setIdFn={setPersonFromInput}
                 searchFn={searchForPeople}
                 placeholder="Search for person"
+                errorMessage={searchType === SearchType.person ? errorMessage : undefined}
               />
             }
             {
@@ -116,6 +118,7 @@ const GameMoveModal: React.FC<GameMoveModalProps> = ({
                 setIdFn={setMovieFromInput}
                 searchFn={searchForMovie}
                 placeholder="Search for movie"
+                errorMessage={searchType === SearchType.movie ? errorMessage : undefined}
               />
             }
           </VStack>

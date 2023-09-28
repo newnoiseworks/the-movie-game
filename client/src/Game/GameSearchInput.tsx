@@ -1,6 +1,7 @@
-import { useRef, useState, forwardRef, useImperativeHandle } from 'react'
+import { useRef, useState, forwardRef, useImperativeHandle, useEffect } from 'react'
 import {
   FormControl,
+  FormErrorMessage,
   Popover,
   PopoverContent,
   PopoverBody,
@@ -27,21 +28,31 @@ interface GameSearchInputProps {
   searchFn: (s: string) => Promise<{ results: SearchResult[] }>
   setIdFn: (id: number) => void
   placeholder: string
+  errorMessage?: string
 }
 
 const GameSearchInput: React.ForwardRefRenderFunction<
   GameSearchInputRef, GameSearchInputProps
 > = ({
-  placeholder, searchFn, setIdFn
+  placeholder, searchFn, setIdFn, errorMessage
 }, ref) => {
   const [searchResults, setSearchResults] = useState<SearchResult[]>([])
   const [isLoading, setLoading] = useState<boolean>(false)
+  const [currentError, setCurrentError] = useState<string>()
   const inputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    if (errorMessage) {
+      setCurrentError(errorMessage)
+    }
+  }, [errorMessage])
 
   async function autoCompleteOnChange(value: string) {
     if (inputRef.current) {
       inputRef.current.value = value
     }
+
+    setCurrentError(undefined)
 
     if (value.length < 3) {
       setSearchResults([])
@@ -77,7 +88,7 @@ const GameSearchInput: React.ForwardRefRenderFunction<
       matchWidth
     >
       <PopoverTrigger>
-        <FormControl>
+        <FormControl isInvalid={!!currentError}>
           <InputGroup>
             <Input
               placeholder={placeholder}
@@ -91,6 +102,9 @@ const GameSearchInput: React.ForwardRefRenderFunction<
               </InputRightElement>
             }
           </InputGroup>
+          {currentError && <FormErrorMessage>
+            {currentError}
+          </FormErrorMessage>}
         </FormControl>
       </PopoverTrigger>
       <PopoverContent>

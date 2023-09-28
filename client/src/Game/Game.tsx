@@ -47,6 +47,7 @@ const Game: React.FC = () => {
   const [ currentPlayerName, setCurrentPlayerName ] = useState<string>('')
   const [ searchType, setSearchType ] = useState<SearchType>(SearchType.both)
   const [ lastMove, setLastMove ] = useState<GameHistoryMove>()
+  const [ errorMessage, setErrorMessage ] = useState<string>()
 
   useEffect(function setupPlayerArrayOnFirebaseSnapshotChanges() {
     if (!playerLoading && playerSnaps) {
@@ -116,6 +117,8 @@ const Game: React.FC = () => {
   }, [currentPlayer, onMoveModalOpen, onMoveModalClose, finalWinner])
 
   async function makeChoice(id: number, choice: SearchType) {
+    setErrorMessage(undefined)
+
     const data: GameMove = {
       toType: choice === SearchType.movie ? 'mid' : 'pid'
     }
@@ -137,11 +140,8 @@ const Game: React.FC = () => {
     try {
       await playerGameChoice(data, gameId!)
     } catch(err: any) {
-      if (err.response.data.includes('already been chosen')) {
-        alert("Already chosen")
-      } else {
-        console.error(err)
-      }
+      setErrorMessage(err.response.data)
+      return
     }
   }
 
@@ -170,6 +170,7 @@ const Game: React.FC = () => {
         searchType={searchType}
         isOpen={isMoveModalOpen}
         onClose={onMoveModalClose}
+        errorMessage={errorMessage}
       />
     </Container>
   )
