@@ -180,11 +180,16 @@ const Game: React.FC = () => {
       {history && history.length > 0 &&
         <Box>
           <Text fontSize="lg">Choice History</Text>
-          {history && uniq(history, h => h.key).map((h) => {
+          {history && uniq(history, h => h.key).map((h, idx, history) => {
+            const lastMove = idx > 0 ? history[idx - 1].val() as GameHistoryMove : undefined
             const move = h.val() as GameHistoryMove
-            return <Text fontSize={"xs"}>
+
+            return <Text fontSize={"xs"} key={h.key}>
               {move.player.name}
-              {move.correct ? ' correctly ' : ' incorrectly '}
+              {
+                (lastMove && lastMove.correct) &&
+                  (move.correct ? ' correctly ' : ' incorrectly ')
+              }
               {move.toType === 'mid' ? ' chose movie: ' : ' chose person: '}
               <br />
               <em>{move.name}</em>
