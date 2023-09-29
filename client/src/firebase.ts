@@ -16,8 +16,8 @@ const app = initializeApp(firebaseConfig)
 const auth = getAuth(app)
 const db = getDatabase(app)
 
-function anonymousSignIn(cb?: Function) {
-  signInAnonymously(auth)
+async function anonymousSignIn(cb?: Function) {
+  return signInAnonymously(auth)
   .then(() => {
     console.log("Signing in user anonymously")
 

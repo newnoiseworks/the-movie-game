@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-import { auth, removeOnDisconnect } from './firebase'
+import { auth } from './firebase'
 
 async function createGame(name: string, gameName?: string) {
   const headers = await getAuthHeaders()
@@ -24,8 +24,6 @@ async function joinGame(name: string, gid: string) {
       { name, gid },
       { headers }
     )
-
-  removeOnDisconnect(`games/${gid}/players/${response.data}`)
 
   return response.data
 }
@@ -84,6 +82,20 @@ async function searchForMovie(name: string) {
   return response.data
 }
 
+async function sendHeartbeat(gid: string) {
+  console.log("sending heartbeat...")
+  const headers = await getAuthHeaders()
+
+  await axios
+    .post(
+      `${process.env.REACT_APP_FUNCTIONS_URL}/gameHeartbeat`,
+      { gid },
+      { headers }
+    )
+
+  return
+}
+
 async function getAuthHeaders() {
   const token = await auth.currentUser!.getIdToken()
 
@@ -102,6 +114,7 @@ export {
   playerGameChoice,
   searchForPeople,
   searchForMovie,
+  sendHeartbeat,
   getUID
 }
 
