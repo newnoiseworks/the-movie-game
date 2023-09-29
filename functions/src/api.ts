@@ -206,6 +206,21 @@ app.post('/playerGameChoice', apiAuth, async (request, response) => {
   response.send()
 })
 
+app.post('/gameHeartbeat', apiAuth, async (request, response) => {
+  const db = admin.database()
+  const game = await new Game(db).get(request.body.gid)
+  const uuid = request.idToken!.uid
+
+  try {
+    await game.heartbeat(uuid)
+  } catch (err: any) {
+    response.statusCode = 500
+    response.send("Error processing heartbeat")
+  }
+
+  response.send()
+})
+
 async function isPersonInMovie(movieId: number, personId: number, getPersonInfo?: boolean) {
   let movieResponse, personResponse
 

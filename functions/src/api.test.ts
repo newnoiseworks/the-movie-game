@@ -9,6 +9,7 @@ import Game, {
   Player,
   GameMove,
   MAX_SCORE,
+  HEARTBEAT_TIME,
   GameErrorMovieOrArtfulLiarAlreadyChosen,
   GameErrorPreviousMovieDoesntMatchCurrent,
   GameErrorPreviousArtfulLiarDoesntMatchCurrent
@@ -739,3 +740,35 @@ describe("/playerGameChoice", () => {
   })
 })
   
+describe("/gameHeartbeat", () => {
+  let gid: string | null, game: Game
+
+  beforeEach(async () => {
+    nockDone = (await nock.back(`gameHeartbeat.json`, NOCK_BACK_OPTIONS)).nockDone
+
+    gid = await new Game(db).create({ uuid: uuidOne, name })
+    game = await new Game(db).get(gid!)
+    await game.join({ uuid: uuidTwo, name: nameTwo })
+    await game.playerReady(uuidOne, true)
+    await game.playerReady(uuidTwo, true)
+  })
+
+  test("calling hearbeat should update DB heartbeat timestamp", async () => {
+    const firstPlayerKey = game.getPlayerKeyFrom(uuidOne)!
+    const heartbeatsAgo = new Date().getTime() - (HEARTBEAT_TIME)
+
+    await db.ref(`games/${gid}/players/${firstPlayerKey}/heartbeat`).set(heartbeatsAgo)
+
+    await game.get(gid!)
+
+    expect(game.players[firstPlayerKey].heartbeat).toBe(heartbeatsAgo)
+
+    const initialHeartbeat = game.players[firstPlayerKey].heartbeat
+
+    await axios.post('/gameHeartbeat', { gid }, getAuthHeaderFor(0))
+
+    await game.get(gid!)
+
+    expect(game.players[firstPlayerKey].heartbeat).toBeGreaterThan(initialHeartbeat!)
+  })
+})
