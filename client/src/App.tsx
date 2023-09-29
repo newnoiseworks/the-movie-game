@@ -54,10 +54,6 @@ const router = createBrowserRouter([
   {
     path: '/game/:gameId',
     element: <Game />,
-    loader: ({ params }) => {
-      if (!hbeatInterval)
-        hbeatInterval = setInterval(() => heartbeatInterval(params.gameId!), 10000)
-    }
   }
 ])
 
