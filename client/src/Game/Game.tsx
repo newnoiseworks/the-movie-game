@@ -184,7 +184,7 @@ const Game: React.FC = () => {
             const lastMove = idx > 0 ? history[idx - 1].val() as GameHistoryMove : undefined
             const move = h.val() as GameHistoryMove
 
-            return <Text fontSize={"xs"} key={h.key}>
+            return <Text fontSize={"xs"} key={h.key} as="div">
               {move.player.name}
               {
                 (lastMove && lastMove.correct) &&
