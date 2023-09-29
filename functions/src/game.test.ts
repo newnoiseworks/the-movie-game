@@ -522,3 +522,58 @@ describe("Game#playerMove", () => {
     expect(game.currentPlayer).toBe(uuid3)
   })
 })
+
+describe("Game#heartbeat", () => {
+  let game: Game
+  let gameKey: string | null
+
+  beforeEach(async () => {
+    game = new Game(db)
+    gameKey = await game.create({ uuid, name })
+
+    await game.join({ uuid: uuid2, name: name2 })
+    await game.join({ uuid: uuid3, name: name3 })
+
+    await game.playerReady(uuid, true)
+    await game.playerReady(uuid2, true)
+    await game.playerReady(uuid3, true)
+  })
+
+  test("hearbeat should be setup initially on join", () => {
+    expect(game.players[Object.keys(game.players)[0]].heartbeat).toBeTruthy()
+    expect(game.players[Object.keys(game.players)[0]].heartbeat).toBeGreaterThan(0)
+  })
+
+  test("calling hearbeat should update DB heartbeat timestamp", async () => {
+    const player = game.players[Object.keys(game.players).sort()[0]]
+    const initialHeartbeat = player.heartbeat
+
+    await game.heartbeat(uuid)
+
+    expect(player.heartbeat).toBeGreaterThan(initialHeartbeat)
+  })
+
+  test("calling hearbeat should kick other users who haven't made an update in at least 3 heartbeats", async () => {
+    const secondPlayerKey = Object
+      .keys(game.players)
+      .find((key) => game.players[key].uuid === uuid2)
+
+    await db.ref(`games/${gameKey}/players/${secondPlayerKey}/heartbeat`).set(0)
+
+    await game.heartbeat(uuid)
+
+    expect(game.players.hasOwnProperty(uuid2)).toBeFalsy()
+  })
+
+  test.todo("calling hearbeat should check to make sure user isn't already kicked before kicking, maybe", async () => {
+    const secondPlayerKey = Object
+      .keys(game.players)
+      .find((key) => game.players[key].uuid === uuid2)
+
+    await db.ref(`games/${gameKey}/players/${secondPlayerKey}`).remove()
+
+    expect(await game.heartbeat(uuid)).not.toThrowError()
+
+    expect(game.players.hasOwnProperty(uuid2)).toBeFalsy()
+  })
+})
