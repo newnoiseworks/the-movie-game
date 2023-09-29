@@ -1,10 +1,12 @@
 import admin from './fbase'
 
 export const MAX_SCORE = "MOVIE".length
+export const HEARTBEAT_TIME = 1000 * 10
 
 export interface Player {
   uuid: string
   name: string
+  heartbeat?: number
   score?: number
   ready?: boolean
 }
@@ -40,6 +42,7 @@ export default class Game {
 
   async create(firstPlayer: Player, name?: string) {
     firstPlayer.score = 0
+    firstPlayer.heartbeat = new Date().getTime()
 
     const gamesRef = this.db.ref("games")
 
@@ -90,6 +93,8 @@ export default class Game {
     }
 
     newPlayer.score = 0
+    newPlayer.heartbeat = new Date().getTime()
+
     const gamePlayersRef = this.db.ref(`games/${this.gid}/players`)
 
     try {
@@ -113,6 +118,28 @@ export default class Game {
     }
 
     return true
+  }
+
+  async heartbeat(uuid: string) {
+    const playerKey = this.getPlayerKeyFrom(uuid)
+
+    await this.db.ref(`games/${this.gid}/players/${playerKey}/heartbeat`).set(new Date().getTime())
+
+    const playersSnap = await this.db.ref(`games/${this.gid}/players/`).once("value")
+    const players = playersSnap.val() as { [key: string]: Player }
+
+    const heartbeatCutoff = new Date().getTime() - (3 * HEARTBEAT_TIME)
+
+    for (const playerKey in players) {
+      const player = players[playerKey]
+
+      if (player.heartbeat! <= heartbeatCutoff) {
+        delete players[playerKey]
+      }
+    }
+
+    await this.db.ref(`games/${this.gid}/players`).set(players)
+    await this.get(this.gid!)
   }
 
   isPlayerAlreadyInGame(newPlayer: Player) {
@@ -251,6 +278,10 @@ export default class Game {
         throw new GameErrorPreviousMovieDoesntMatchCurrent()
       }
     }
+  }
+
+  getPlayerKeyFrom(uuid: string) {
+    return this.sortedKeys(this.players).find((key) => this.players[key].uuid === uuid)
   }
 
   sortedKeys(obj: object) {
