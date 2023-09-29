@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { useList, useObjectVal } from 'react-firebase-hooks/database'
 import {
-  Container,
   useDisclosure,
   Text,
   Flex,
@@ -71,11 +70,11 @@ const Game: React.FC = () => {
   useEffect(function setupCurrentPlayerNameFromPlayers() {
     if (currentPlayer && players && players.length > 0) {
       const player = players.find((p) => p.uuid === currentPlayer)
-      if (player) {
+      if (player && currentPlayerName !== player.name) {
         setCurrentPlayerName(player.name)
       }
     }
-  }, [players, currentPlayer])
+  }, [players, currentPlayer, currentPlayerName])
 
   useEffect(function setupGameMoveModalOnCurrentPlayerChanges() {
     if (history) {
@@ -104,12 +103,11 @@ const Game: React.FC = () => {
     if (players) {
       const playersLeft = players.filter((p) => (p.score || 0) < MAX_SCORE)
 
-      if (playersLeft.length === 1) {
+      if (playersLeft.length === 1 && !finalWinner) {
         setFinalWinner(playersLeft[0])
       }
     }
-
-  }, [players])
+  }, [players, finalWinner])
 
   useEffect(function setupMoveModal() {
     if (currentPlayer && getUID() === currentPlayer && !finalWinner) {
