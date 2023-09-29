@@ -8,6 +8,7 @@ import Game, {
   GameErrorPreviousArtfulLiarDoesntMatchCurrent,
   GameErrorPreviousMovieDoesntMatchCurrent,
   MAX_SCORE,
+  HEARTBEAT_TIME,
   Player
 } from './game'
 
@@ -545,12 +546,20 @@ describe("Game#heartbeat", () => {
   })
 
   test("calling hearbeat should update DB heartbeat timestamp", async () => {
-    const player = game.players[Object.keys(game.players).sort()[0]]
-    const initialHeartbeat = player.heartbeat
+    const firstPlayerKey = game.getPlayerKeyFrom(uuid)!
+    const heartbeatsAgo = new Date().getTime() - (HEARTBEAT_TIME)
+
+    await db.ref(`games/${gameKey}/players/${firstPlayerKey}/heartbeat`).set(heartbeatsAgo)
+
+    await game.get(gameKey!)
+
+    expect(game.players[firstPlayerKey].heartbeat).toBe(heartbeatsAgo)
+
+    const initialHeartbeat = game.players[firstPlayerKey].heartbeat
 
     await game.heartbeat(uuid)
 
-    expect(player.heartbeat).toBeGreaterThan(initialHeartbeat)
+    expect(game.players[firstPlayerKey].heartbeat).toBeGreaterThan(initialHeartbeat!)
   })
 
   test("calling hearbeat should kick other users who haven't made an update in at least 3 heartbeats", async () => {
@@ -558,24 +567,23 @@ describe("Game#heartbeat", () => {
       .keys(game.players)
       .find((key) => game.players[key].uuid === uuid2)
 
-
-    const threeHeartbeatsAgo = new Date().getTime() - 1000 -  (3 * Game.HEARTBEAT_TIME)
+    const threeHeartbeatsAgo = new Date().getTime() - 1000 -  (3 * HEARTBEAT_TIME)
 
     await db.ref(`games/${gameKey}/players/${secondPlayerKey}/heartbeat`).set(threeHeartbeatsAgo)
 
     await game.heartbeat(uuid)
 
-    expect(game.players.hasOwnProperty(uuid2)).toBeFalsy()
+    expect(game.players.hasOwnProperty(secondPlayerKey!)).toBeFalsy()
   })
 
-  test.todo("calling hearbeat should check to make sure user isn't already kicked before kicking, maybe", async () => {
+  test("calling hearbeat should check to make sure user isn't already kicked before kicking", async () => {
     const secondPlayerKey = Object
       .keys(game.players)
       .find((key) => game.players[key].uuid === uuid2)
 
     await db.ref(`games/${gameKey}/players/${secondPlayerKey}`).remove()
 
-    expect(await game.heartbeat(uuid)).not.toThrowError()
+    await expect(game.heartbeat(uuid)).resolves.not.toThrowError()
 
     expect(game.players.hasOwnProperty(uuid2)).toBeFalsy()
   })
