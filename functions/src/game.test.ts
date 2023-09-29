@@ -558,7 +558,10 @@ describe("Game#heartbeat", () => {
       .keys(game.players)
       .find((key) => game.players[key].uuid === uuid2)
 
-    await db.ref(`games/${gameKey}/players/${secondPlayerKey}/heartbeat`).set(0)
+
+    const threeHeartbeatsAgo = new Date().getTime() - 1000 -  (3 * Game.HEARTBEAT_TIME)
+
+    await db.ref(`games/${gameKey}/players/${secondPlayerKey}/heartbeat`).set(threeHeartbeatsAgo)
 
     await game.heartbeat(uuid)
 
