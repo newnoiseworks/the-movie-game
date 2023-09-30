@@ -43,8 +43,9 @@ const PlayerRow: React.FC<{ player: GamePlayer, currentPlayer: string }> = ({ pl
   return <Tr key={player.key}>
     <Td>
       <em style={{ textDecoration: lost ? "line-through" : '' }}>{player.name}</em>
-      {currentPlayer === player.uuid && ' waiting for move'}
       {lost && ' is out!'}
+      {!lost && currentPlayer === player.uuid && ' waiting for move'}
+      {new Date().getTime() - (player.heartbeat || 0) > 15000 && ' gone idle...'}
     </Td>
     <Td textAlign="right">
       {getScoreString(player)}

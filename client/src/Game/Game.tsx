@@ -19,6 +19,7 @@ export interface GamePlayer {
   uuid: string
   name: string
   key: string
+  heartbeat?: number
   score?: number
   ready?: boolean
 }
