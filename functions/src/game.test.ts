@@ -562,10 +562,8 @@ describe("Game#heartbeat", () => {
     expect(game.players[firstPlayerKey].heartbeat).toBeGreaterThan(initialHeartbeat!)
   })
 
-  test("calling hearbeat should kick other users who haven't made an update in at least 3 heartbeats", async () => {
-    const secondPlayerKey = Object
-      .keys(game.players)
-      .find((key) => game.players[key].uuid === uuid2)
+  test("calling hearbeat should give full score to users who haven't made an update in at least 3 heartbeats", async () => {
+    const secondPlayerKey = game.getPlayerKeyFrom(uuid2)
 
     const threeHeartbeatsAgo = new Date().getTime() - 1000 -  (3 * HEARTBEAT_TIME)
 
@@ -573,18 +571,6 @@ describe("Game#heartbeat", () => {
 
     await game.heartbeat(uuid)
 
-    expect(game.players.hasOwnProperty(secondPlayerKey!)).toBeFalsy()
-  })
-
-  test("calling hearbeat should check to make sure user isn't already kicked before kicking", async () => {
-    const secondPlayerKey = Object
-      .keys(game.players)
-      .find((key) => game.players[key].uuid === uuid2)
-
-    await db.ref(`games/${gameKey}/players/${secondPlayerKey}`).remove()
-
-    await expect(game.heartbeat(uuid)).resolves.not.toThrowError()
-
-    expect(game.players.hasOwnProperty(uuid2)).toBeFalsy()
+    expect(game.players[secondPlayerKey!].score).toBe(MAX_SCORE)
   })
 })

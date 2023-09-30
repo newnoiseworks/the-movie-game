@@ -134,7 +134,7 @@ export default class Game {
       const player = players[playerKey]
 
       if (player.heartbeat! <= heartbeatCutoff) {
-        delete players[playerKey]
+        player.score = MAX_SCORE
       }
     }
 
