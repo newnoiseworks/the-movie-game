@@ -4,12 +4,11 @@ import { Box, ChakraProvider, Container, extendTheme, Flex } from '@chakra-ui/re
 
 import Footer from './Global/Footer'
 import Create from './GameSetup/Create'
-import SignUpInPage from './SignUpIn'
 import GameLobby from './GameSetup/Lobby'
 import Game from './Game/Game'
 
 import { anonymousSignIn, auth } from './firebase'
-import { sendHeartbeat } from './api'
+import { clearHeartbeatInterval } from './api'
 
 const theme = extendTheme({
   components: {
@@ -21,39 +20,27 @@ const theme = extendTheme({
   }
 })
 
-function heartbeatInterval(gameId: string) {
-  if (!!auth.currentUser) {
-    sendHeartbeat(gameId)
-  }
-}
-
-let hbeatInterval: NodeJS.Timer
-
 const router = createBrowserRouter([
   {
     path: '/',
     element: <Create />,
     loader: () => {
-      if (!!hbeatInterval) {
-        clearInterval(hbeatInterval)
-      }
+      clearHeartbeatInterval()
     }
-  },
-  {
-    path: '/sign-up-in',
-    element: <SignUpInPage />
   },
   {
     path: '/game-lobby/:gameId',
     element: <GameLobby />,
-    loader: ({ params }) => {
-      if (!hbeatInterval)
-        hbeatInterval = setInterval(() => heartbeatInterval(params.gameId!), 10000)
+    loader: () => {
+      clearHeartbeatInterval()
     }
   },
   {
     path: '/game/:gameId',
     element: <Game />,
+    loader: () => {
+      clearHeartbeatInterval()
+    }
   }
 ])
 

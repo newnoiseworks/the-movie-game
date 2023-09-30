@@ -10,7 +10,7 @@ import {
 import { uniq } from 'underscore'
 
 import { getFromDB } from '../firebase'
-import { getUID, playerGameChoice } from '../api'
+import { getUID, playerGameChoice, isHeartbeatOn, setupHeartbeatInterval } from '../api'
 import GamePlayerList, { MAX_SCORE } from './GamePlayerList'
 import GameMoveModal, {SearchType} from './GameMoveModal'
 import GameMoveJumbotron from './GameMoveJumbotron'
@@ -67,6 +67,12 @@ const Game: React.FC = () => {
       setPlayers(_players)
     }
   }, [playerLoading, playerSnaps])
+
+  useEffect(function setupHeartbeatIfPlayerHasnt() {
+    if (gameId && !isHeartbeatOn() && players.find((p) => p.uuid === getUID())) {
+      setupHeartbeatInterval(gameId)
+    }
+  }, [players, gameId])
 
   useEffect(function setupCurrentPlayerNameFromPlayers() {
     if (currentPlayer && players && players.length > 0) {

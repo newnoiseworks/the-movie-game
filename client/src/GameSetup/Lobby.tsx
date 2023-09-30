@@ -12,7 +12,7 @@ import { useList, useObjectVal } from 'react-firebase-hooks/database'
 import { useCopyToClipboard, useCountdown } from 'usehooks-ts'
 
 import { getFromDB } from '../firebase'
-import { getUID } from '../api'
+import { getUID, isHeartbeatOn, setupHeartbeatInterval } from '../api'
 
 import LobbyPlayerList, { LobbyPlayer } from './LobbyPlayerList'
 import LobbyJoinModal from './LobbyJoinModal'
@@ -55,6 +55,12 @@ const GameLobby: React.FC = () => {
       }
     }
   }, [playerLoading, playerSnaps, isOpen, onOpen, gameLaunching])
+
+  useEffect(function setupHeartbeatIfPlayerHasnt() {
+    if (gameId && !isHeartbeatOn() && players.find((p) => p.uuid === getUID())) {
+      setupHeartbeatInterval(gameId)
+    }
+  }, [players, gameId])
 
   useEffect(function checkIfGameHasStartedAndBootIfSo() {
     if (players.find((p) => p.score && p.score > 0)) {

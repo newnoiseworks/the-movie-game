@@ -2,6 +2,8 @@ import axios from 'axios'
 
 import { auth } from './firebase'
 
+let hbeatInterval: NodeJS.Timer | undefined
+
 async function createGame(name: string, gameName?: string) {
   const headers = await getAuthHeaders()
 
@@ -83,8 +85,9 @@ async function searchForMovie(name: string) {
 }
 
 async function sendHeartbeat(gid: string) {
-  console.log("sending heartbeat...")
   const headers = await getAuthHeaders()
+
+  // console.log("sending heartbeat for user " + getUID() + " at " + new Date().getTime())
 
   await axios
     .post(
@@ -94,6 +97,34 @@ async function sendHeartbeat(gid: string) {
     )
 
   return
+}
+
+function isHeartbeatOn() {
+  return !!hbeatInterval
+}
+
+async function setupHeartbeatInterval(gid: string) {
+  // console.log("setupHeartbeatInterval called")
+
+  if (!isHeartbeatOn()) {
+    // console.log("actually setting heartbeat up")
+
+    sendHeartbeat(gid)
+
+    hbeatInterval = setInterval(() => {
+      if (!!auth.currentUser) {
+        sendHeartbeat(gid)
+      }
+    }, 10000)
+  }
+}
+
+function clearHeartbeatInterval() {
+  if (isHeartbeatOn()) {
+    // console.log("clearing heartbeat interval")
+    clearInterval(hbeatInterval)
+    hbeatInterval = undefined
+  }
 }
 
 async function getAuthHeaders() {
@@ -114,7 +145,9 @@ export {
   playerGameChoice,
   searchForPeople,
   searchForMovie,
-  sendHeartbeat,
+  setupHeartbeatInterval,
+  clearHeartbeatInterval,
+  isHeartbeatOn,
   getUID
 }
 
