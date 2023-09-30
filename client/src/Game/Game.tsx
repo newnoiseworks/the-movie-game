@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useCallback, useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { useList, useObjectVal } from 'react-firebase-hooks/database'
 import {
@@ -124,7 +124,7 @@ const Game: React.FC = () => {
     }
   }, [currentPlayer, onMoveModalOpen, onMoveModalClose, finalWinner])
 
-  async function makeChoice(id: number, choice: SearchType) {
+  const makeChoice = useCallback(async (id: number, choice: SearchType) => {
     setErrorMessage(undefined)
 
     const data: GameMove = {
@@ -151,7 +151,7 @@ const Game: React.FC = () => {
       setErrorMessage(err.response.data)
       return
     }
-  }
+  }, [history, lastMove, gameId])
 
   return (
     <Flex>
