@@ -573,4 +573,21 @@ describe("Game#heartbeat", () => {
 
     expect(game.players[secondPlayerKey!].score).toBe(MAX_SCORE)
   })
+
+  test("if final winner, loss of heartbeat shouldn't result in loss", async () => {
+    const firstPlayerKey = game.getPlayerKeyFrom(uuid)!
+    const secondPlayerKey = game.getPlayerKeyFrom(uuid2)!
+    const thirdPlayerKey = game.getPlayerKeyFrom(uuid3)!
+    const heartbeatsAgo = new Date().getTime() - 1000 - (3 * HEARTBEAT_TIME)
+
+    await Promise.all([
+      db.ref(`games/${gameKey}/players/${firstPlayerKey}/heartbeat`).set(heartbeatsAgo),
+      db.ref(`games/${gameKey}/players/${secondPlayerKey}/score`).set(MAX_SCORE),
+      db.ref(`games/${gameKey}/players/${thirdPlayerKey}/score`).set(MAX_SCORE)
+    ])
+
+    await game.heartbeat(uuid2)
+
+    expect(game.players[firstPlayerKey!].score).toBe(0)
+  })
 })

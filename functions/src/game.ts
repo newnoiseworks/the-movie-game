@@ -128,6 +128,13 @@ export default class Game {
     const playersSnap = await this.db.ref(`games/${this.gid}/players/`).once("value")
     const players = playersSnap.val() as { [key: string]: Player }
 
+    if (
+      Object.keys(players).
+      filter((key) => (players[key].score || 0) < MAX_SCORE).length <= 1
+    ) {
+      return
+    }
+
     const heartbeatCutoff = new Date().getTime() - (3 * HEARTBEAT_TIME)
 
     for (const playerKey in players) {
