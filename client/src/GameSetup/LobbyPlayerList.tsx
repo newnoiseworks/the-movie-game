@@ -20,6 +20,7 @@ export interface LobbyPlayer {
   ready?: boolean
   uuid: string
   key: string
+  score?: number
 }
 
 export interface LobbyPlayerListProps {
