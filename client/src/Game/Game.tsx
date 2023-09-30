@@ -162,7 +162,7 @@ const Game: React.FC = () => {
           {gameName}
         </Text>
         <Text variant="h3" fontSize="sm">
-          Lobby - The Movie Game
+          Now Playing: The Movie Game
         </Text>
         <GameMoveJumbotron
           playerName={currentPlayerName}
