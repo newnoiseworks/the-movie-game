@@ -3,9 +3,9 @@ import { useState, useEffect } from 'react'
 import { Box, ChakraProvider, Container, extendTheme, Flex } from '@chakra-ui/react'
 
 import Footer from './Global/Footer'
-import Create from './GameSetup/Create'
-import GameLobby from './GameSetup/Lobby'
-import Game from './Game/Game'
+import Create from './GameSetup/CreatePage'
+import GameLobby from './GameSetup/LobbyPage'
+import Game from './Game/GamePage'
 
 import { anonymousSignIn, auth } from './firebase'
 import { clearHeartbeatInterval } from './api'

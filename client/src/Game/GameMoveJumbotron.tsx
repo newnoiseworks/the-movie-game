@@ -9,7 +9,7 @@ import {
   Text
 } from '@chakra-ui/react'
 
-import { GameHistoryMove, GamePlayer } from './Game'
+import { GameHistoryMove, GamePlayer } from './GamePage'
 import { getScoreString, MAX_SCORE } from './GamePlayerList'
 
 interface GameMoveJumbotronProps {

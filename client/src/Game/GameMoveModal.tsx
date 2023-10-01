@@ -13,7 +13,7 @@ import {
 
 import { searchForPeople, searchForMovie } from '../api'
 import GameSearchInput, { GameSearchInputRef } from './GameSearchInput'
-import {GameHistoryMove} from './Game'
+import { GameHistoryMove } from './GamePage'
 
 export enum SearchType {
   person,

@@ -8,7 +8,7 @@ import {
   Td,
   TableContainer, } from '@chakra-ui/react'
 
-import { GamePlayer } from './Game'
+import { GamePlayer } from './GamePage'
 
 interface GamePlayerListProps {
   players: GamePlayer[]
