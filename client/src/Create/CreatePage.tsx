@@ -29,7 +29,7 @@ const CreateOrJoin: React.FC = () => {
   async function createGameAndChangePage() {
     let gameId
 
-    if (playerName) {
+    if (playerName && !playerNameInvalid) {
       try {
         gameId = await createGame(playerName, gameName)
         navigate(`/game-lobby/${gameId}`)
@@ -49,10 +49,7 @@ const CreateOrJoin: React.FC = () => {
   }
 
   return (
-    <
-      Container
-      textAlign={'center'}
-    >
+    <Container textAlign="center">
       <Text
         as="h1"
         fontSize="xxx-large"
@@ -62,7 +59,7 @@ const CreateOrJoin: React.FC = () => {
       >
         The Movie Game
       </Text>
-      <Button onClick={() => onOpen()}>Create a Game</Button>
+      <Button onClick={() => onOpen()} data-testid="modal-button">Create a Game</Button>
       <Modal isOpen={isOpen} onClose={onClose}>
         <ModalOverlay />
         <ModalContent>
@@ -77,6 +74,7 @@ const CreateOrJoin: React.FC = () => {
                 placeholder="Enter Your Name*"
                 isInvalid={playerNameInvalid}
                 value={playerName}
+                data-testid="name-input"
                 onChange={(e) => onPlayerNameChange(e.target.value)}
               />
               {playerNameInvalid &&
@@ -91,12 +89,16 @@ const CreateOrJoin: React.FC = () => {
               <Input
                 placeholder="Enter Game Name (Optional)"
                 value={gameName}
+                data-testid="game-name-input"
                 onChange={(e) => setGameName(e.target.value)}
               />
             </VStack>
           </ModalBody>
           <ModalFooter>
-            <Button onClick={() => createGameAndChangePage()}>
+            <Button
+              onClick={() => createGameAndChangePage()}
+              data-testid="submit-create-game-button"
+            >
               Create Game
             </Button>
           </ModalFooter>
