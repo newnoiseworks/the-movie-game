@@ -43,6 +43,7 @@ const LobbyJoinModal: React.FC<LobbyJoinModalProps> = ({
               isInvalid={playerNameInvalid}
               value={playerName}
               onChange={(e) => onPlayerNameChange(e.target.value)}
+              data-testid="join-game-modal-name-input"
             />
             {playerNameInvalid && <Text as="p" fontSize="x-small">Name of 3 characters or more required</Text>}
           </VStack>

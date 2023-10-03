@@ -1,33 +1,22 @@
 import React, { useEffect, useState } from 'react'
-import {
-  Button,
-  Container,
-  Flex,
-  Spacer,
-  Text,
-  useDisclosure
-} from '@chakra-ui/react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useList, useObjectVal } from 'react-firebase-hooks/database'
-import { useCopyToClipboard, useCountdown } from 'usehooks-ts'
+import { useCopyToClipboard } from 'usehooks-ts'
 
-import { getFromDB } from '../firebase'
 import { getUID, isHeartbeatOn, setupHeartbeatInterval } from '../api'
+import { getFromDB } from '../firebase'
 
-import LobbyPlayerList, { LobbyPlayer } from './LobbyPlayerList'
-import LobbyJoinModal from './LobbyJoinModal'
+import { LobbyPlayer } from './LobbyPlayerList'
+import LobbyContainer from './LobbyContainer'
 
 const GameLobby: React.FC = () => {
   const [ , copy ] = useCopyToClipboard()
-  const [count, { startCountdown, resetCountdown  }] = useCountdown({ countStart: 10 })
-  const navigate = useNavigate()
   const { gameId } = useParams()
-  const { isOpen, onOpen, onClose } = useDisclosure()
+  const navigate = useNavigate()
 
   const [ playerSnaps, playerLoading, playerError ] = useList(getFromDB(`games/${gameId}/players`))
   const [ gameName, gameNameLoading, gameNameError ] = useObjectVal<string>(getFromDB(`games/${gameId}/name`))
   const [ players, setPlayers ] = useState<LobbyPlayer[]>([])
-  const [ gameLaunching, setGameLaunching ] = useState<boolean>(false)
 
   function copyUrlFn() {
     copy(global.window.location.href)
@@ -46,103 +35,32 @@ const GameLobby: React.FC = () => {
       })
 
       setPlayers(_players)
-
-      if (
-        !isOpen && !_players.find((p) => p.uuid === getUID()) &&
-        !gameLaunching
-      ) {
-        onOpen()
-      }
     }
-  }, [playerLoading, playerSnaps, isOpen, onOpen, gameLaunching])
-
-  useEffect(function setupHeartbeatIfPlayerHasnt() {
-    if (gameId && !isHeartbeatOn() && players.find((p) => p.uuid === getUID())) {
-      setupHeartbeatInterval(gameId)
-    }
-  }, [players, gameId])
-
-  useEffect(function checkIfGameHasStartedAndBootIfSo() {
-    if (players.find((p) => p.score && p.score > 0)) {
-      navigate('/game/' + gameId)
-    }
-  }, [players, navigate, gameId])
-
-  useEffect(function startCountdownIfAllPlayersAreReady() {
-    if (players.length > 1 && !players.find((p) => !p.ready)) {
-      setGameLaunching(true)
-      startCountdown()
-    } else {
-      setGameLaunching(false)
-      resetCountdown()
-    }
-  }, [players, resetCountdown, startCountdown])
-
-  useEffect(function navigateToActiveGamePageIfCountdownHasHitZero() {
-    if (count === 0) {
-      navigate(`/game/${gameId}`)
-    }
-  }, [count, navigate, gameId])
+  }, [playerLoading, playerSnaps])
 
   if (!gameId) {
     navigate('/')
     return <></>
   }
 
+  if (gameNameLoading || playerLoading) {
+    return <>"Loading game..."</>
+  }
+
+  if (gameNameError || playerError) {
+    return <>"Error loading game..."</>
+  }
+
   return (
-    <Container>
-      <Container sx={{ mb: 6 }}>
-        {gameNameLoading && "Loading game..."}
-        {gameNameError && `Error loading game... ${gameNameError}`}
-        <Text variant="h1" fontSize="3xl" fontWeight="bold">
-          {gameName}
-        </Text>
-        <Text variant="h3" fontSize="sm">
-          Lobby - The Movie Game
-        </Text>
-      </Container>
-      {
-        gameLaunching ?
-        (
-          <Container>
-            <Text variant="h3" fontSize="sm">
-              {
-                players.find((p) => p.uuid === getUID()) ?
-                  `Game Launching in ${count} seconds...`
-                :
-                  'Game launching! Unless someone clicks ready to off, no new joiners.'
-              }
-            </Text>
-          </Container>
-        )
-        :
-        (
-          <Container sx={{ mb: 4 }}>
-            <Flex alignItems="center">
-              <Text variant="h3" fontSize="sm">
-                Share this URL to ask others to join
-              </Text>
-              <Spacer />
-              <Button colorScheme="purple" onClick={copyUrlFn}>
-                Copy Share Link
-              </Button>
-            </Flex>
-          </Container>
-        )
-      }
-      {playerLoading && "Loading players..."}
-      {playerError && `Error loading players... ${playerError}`}
-      <LobbyPlayerList
-        players={players}
-        gameId={gameId}
-        copyUrlFn={copyUrlFn}
-      />
-      <LobbyJoinModal
-        isOpen={isOpen}
-        onClose={onClose}
-        gameId={gameId}
-      />
-    </Container>
+    <LobbyContainer
+      players={players}
+      copyUrlFn={copyUrlFn}
+      gameName={gameName}
+      gameId={gameId!}
+      isHeartbeatOn={isHeartbeatOn}
+      setupHeartbeatInterval={setupHeartbeatInterval}
+      uuid={getUID()}
+    />
   )
 }
 
