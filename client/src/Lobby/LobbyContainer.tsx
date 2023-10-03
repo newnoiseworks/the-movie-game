@@ -8,25 +8,35 @@ import {
   useDisclosure
 } from '@chakra-ui/react'
 import { useNavigate } from 'react-router-dom'
-import { useCountdown } from 'usehooks-ts'
 
 import LobbyPlayerList, { LobbyPlayer } from './LobbyPlayerList'
 import LobbyJoinModal from './LobbyJoinModal'
 
-interface GameLobbyContainerProps {
+export interface LobbyContainerProps {
   players: LobbyPlayer[]
   copyUrlFn: () => void
   gameId: string
   isHeartbeatOn: () => boolean
   setupHeartbeatInterval: (gid: string) => Promise<void>
   uuid: string
-  gameName?: string
+  count: number
+  startCountdown: () => void
+  resetCountdown: () => void
+  gameName: string
 }
 
-const GameLobbyContainer: React.FC<GameLobbyContainerProps> = ({
-  players, copyUrlFn, gameName, gameId, isHeartbeatOn, setupHeartbeatInterval, uuid
+const LobbyContainer: React.FC<LobbyContainerProps> = ({
+  players,
+  copyUrlFn,
+  gameName,
+  gameId,
+  isHeartbeatOn,
+  setupHeartbeatInterval,
+  uuid,
+  count,
+  startCountdown,
+  resetCountdown
 }) => {
-  const [count, { startCountdown, resetCountdown }] = useCountdown({ countStart: 10 })
   const navigate = useNavigate()
   const { isOpen, onOpen, onClose } = useDisclosure()
 
@@ -91,7 +101,7 @@ const GameLobbyContainer: React.FC<GameLobbyContainerProps> = ({
             <Text variant="h3" fontSize="sm" data-testid="game-launching-header">
               {
                 players.find((p) => p.uuid === uuid) ?
-                  `Game Launching in ${count} seconds...`
+                  `Game launching in ${count} seconds...`
                 :
                   'Game launching! Unless someone clicks ready to off, no new joiners.'
               }
@@ -106,7 +116,11 @@ const GameLobbyContainer: React.FC<GameLobbyContainerProps> = ({
                 Share this URL to ask others to join
               </Text>
               <Spacer />
-              <Button colorScheme="purple" onClick={copyUrlFn}>
+              <Button
+                colorScheme="purple"
+                onClick={copyUrlFn}
+                data-testid="game-container-copy-share-link-button"
+              >
                 Copy Share Link
               </Button>
             </Flex>
@@ -127,5 +141,5 @@ const GameLobbyContainer: React.FC<GameLobbyContainerProps> = ({
   )
 }
 
-export default GameLobbyContainer
+export default LobbyContainer
 

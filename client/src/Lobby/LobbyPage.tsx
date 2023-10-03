@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useList, useObjectVal } from 'react-firebase-hooks/database'
-import { useCopyToClipboard } from 'usehooks-ts'
+import { useCopyToClipboard, useCountdown } from 'usehooks-ts'
 
 import { getUID, isHeartbeatOn, setupHeartbeatInterval } from '../api'
 import { getFromDB } from '../firebase'
@@ -13,6 +13,7 @@ const GameLobby: React.FC = () => {
   const [ , copy ] = useCopyToClipboard()
   const { gameId } = useParams()
   const navigate = useNavigate()
+  const [count, { startCountdown, resetCountdown }] = useCountdown({ countStart: 10 })
 
   const [ playerSnaps, playerLoading, playerError ] = useList(getFromDB(`games/${gameId}/players`))
   const [ gameName, gameNameLoading, gameNameError ] = useObjectVal<string>(getFromDB(`games/${gameId}/name`))
@@ -43,7 +44,7 @@ const GameLobby: React.FC = () => {
     return <></>
   }
 
-  if (gameNameLoading || playerLoading) {
+  if (gameNameLoading || !gameName || playerLoading) {
     return <>"Loading game..."</>
   }
 
@@ -56,10 +57,13 @@ const GameLobby: React.FC = () => {
       players={players}
       copyUrlFn={copyUrlFn}
       gameName={gameName}
-      gameId={gameId!}
+      gameId={gameId}
       isHeartbeatOn={isHeartbeatOn}
       setupHeartbeatInterval={setupHeartbeatInterval}
       uuid={getUID()}
+      count={count}
+      startCountdown={startCountdown}
+      resetCountdown={resetCountdown}
     />
   )
 }

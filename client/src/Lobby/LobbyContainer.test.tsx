@@ -1,6 +1,7 @@
 import {  render, waitFor, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 
-import LobbyContainer from './LobbyContainer'
+import LobbyContainer, { LobbyContainerProps } from './LobbyContainer'
 
 const testGameName = "Test Game"
 const testGid = "test-gid"
@@ -24,11 +25,28 @@ const mockedIsHeartbeatOn = jest.fn().mockImplementation(() => {
   return isHeartbeatOnVar
 })
 
+const mockedStartCountdown = jest.fn()
+const mockedResetCountdown = jest.fn()
 const mockedSetupHeartbeatInterval = jest.fn()
-
 const mockedCopyUrlFn = jest.fn()
-
 const mockedGetUID = jest.fn().mockImplementation(() => testUuid)
+
+function constructLobbyContainer(props: Partial<LobbyContainerProps> = {}) {
+  const defaultProps = {
+    players: [],
+    copyUrlFn: mockedCopyUrlFn,
+    gameName: testGameName,
+    gameId: testGid,
+    isHeartbeatOn: mockedIsHeartbeatOn,
+    setupHeartbeatInterval: mockedSetupHeartbeatInterval,
+    uuid: testUuid,
+    startCountdown: mockedStartCountdown,
+    resetCountdown: mockedResetCountdown,
+    count: 10
+  }
+
+  return <LobbyContainer {  ...defaultProps } { ...props } />
+}
 
 describe("Create game page slash home page", () => {
 
@@ -39,59 +57,41 @@ describe("Create game page slash home page", () => {
     mockedIsHeartbeatOn.mockReset()
     mockedSetupHeartbeatInterval.mockReset()
     mockedGetUID.mockReset()
+    mockedResetCountdown.mockReset()
+    mockedStartCountdown.mockReset()
   })
 
   it('renders without crashing', () => {
-    render(<LobbyContainer
-      players={[]}
-      copyUrlFn={mockedCopyUrlFn}
-      gameName={testGameName}
-      gameId={testGid}
-      isHeartbeatOn={mockedIsHeartbeatOn}
-      setupHeartbeatInterval={mockedSetupHeartbeatInterval}
-      uuid={testUuid}
-    />)
+    render(constructLobbyContainer())
   })
 
   it('opens modal on render if user not in players array', () => {
-    render(<LobbyContainer
-      players={[{
+    render(constructLobbyContainer({
+      players: [{
         name: "Player",
         uuid: "not-test-uuid",
         key: "gibberish-key"
-      }]}
-      copyUrlFn={mockedCopyUrlFn}
-      gameName={testGameName}
-      gameId={testGid}
-      isHeartbeatOn={mockedIsHeartbeatOn}
-      setupHeartbeatInterval={mockedSetupHeartbeatInterval}
-      uuid={testUuid}
-    />)
+      }],
+    }))
 
     expect(screen.getByTestId("join-game-modal-name-input")).toBeInTheDocument()
   })
 
   it('does not open modal on render if user in players array', () => {
-    render(<LobbyContainer
-      players={[{
+    render(constructLobbyContainer({
+      players: [{
         name: "Player",
         uuid: testUuid,
         key: "gibberish-key"
-      }]}
-      copyUrlFn={mockedCopyUrlFn}
-      gameName={testGameName}
-      gameId={testGid}
-      isHeartbeatOn={mockedIsHeartbeatOn}
-      setupHeartbeatInterval={mockedSetupHeartbeatInterval}
-      uuid={testUuid}
-    />)
+      }]
+    }))
 
     expect(screen.queryByTestId("join-game-modal-name-input")).not.toBeInTheDocument()
   })
 
   it('does not open modal if game is launching, even if user isn\'t in game', () => {
-    render(<LobbyContainer
-      players={[{
+    render(constructLobbyContainer({
+      players: [{
         name: "Player1",
         uuid: testUuid + '1',
         key: "gibberish-key",
@@ -101,21 +101,15 @@ describe("Create game page slash home page", () => {
         uuid: testUuid + '2',
         key: "gibberish-key1",
         ready: true
-      }]}
-      copyUrlFn={mockedCopyUrlFn}
-      gameName={testGameName}
-      gameId={testGid}
-      isHeartbeatOn={mockedIsHeartbeatOn}
-      setupHeartbeatInterval={mockedSetupHeartbeatInterval}
-      uuid={testUuid}
-    />)
+      }]
+    }))
 
     expect(screen.queryByTestId("join-game-modal-name-input")).not.toBeInTheDocument()
   })
 
   it('starts countdown if all players are ready', async () => {
-    const { rerender } = render(<LobbyContainer
-      players={[{
+    const { rerender } = render(constructLobbyContainer({
+      players: [{
         name: "Player1",
         uuid: testUuid + '1',
         key: "gibberish-key",
@@ -125,20 +119,14 @@ describe("Create game page slash home page", () => {
         uuid: testUuid + '2',
         key: "gibberish-key1",
         ready: false
-      }]}
-      copyUrlFn={mockedCopyUrlFn}
-      gameName={testGameName}
-      gameId={testGid}
-      isHeartbeatOn={mockedIsHeartbeatOn}
-      setupHeartbeatInterval={mockedSetupHeartbeatInterval}
-      uuid={testUuid}
-    />)
+      }]
+    }))
 
     expect(screen.getByTestId("join-game-modal-name-input")).toBeInTheDocument()
     expect(screen.queryByTestId("game-launching-header")).not.toBeInTheDocument()
 
-    rerender(<LobbyContainer
-      players={[{
+    rerender(constructLobbyContainer({
+      players: [{
         name: "Player1",
         uuid: testUuid + '1',
         key: "gibberish-key",
@@ -148,42 +136,68 @@ describe("Create game page slash home page", () => {
         uuid: testUuid + '2',
         key: "gibberish-key1",
         ready: true
-      }]}
-      copyUrlFn={mockedCopyUrlFn}
-      gameName={testGameName}
-      gameId={testGid}
-      isHeartbeatOn={mockedIsHeartbeatOn}
-      setupHeartbeatInterval={mockedSetupHeartbeatInterval}
-      uuid={testUuid}
-    />)
+      }]
+    }))
 
-    expect(screen.getByTestId("game-launching-header")).toBeInTheDocument()
     await waitFor(() => expect(screen.queryByTestId("join-game-modal-name-input")).not.toBeInTheDocument())
+    expect(screen.getByTestId("game-launching-header")).toBeInTheDocument()
+    expect(mockedStartCountdown).toHaveBeenCalledTimes(1)
+  })
+
+  it('resets countdown if a players backs out of ready', async () => {
+    const { rerender } = render(constructLobbyContainer({
+      players: [{
+        name: "Player1",
+        uuid: testUuid + '1',
+        key: "gibberish-key",
+        ready: true
+      },{
+        name: "Player2",
+        uuid: testUuid + '2',
+        key: "gibberish-key1",
+        ready: true
+      }],
+    }))
+
+    expect(screen.queryByTestId("join-game-modal-name-input")).not.toBeInTheDocument()
+    expect(screen.getByTestId("game-launching-header")).toBeInTheDocument()
+    expect(mockedStartCountdown).toHaveBeenCalledTimes(1)
+
+    rerender(constructLobbyContainer({
+      players: [{
+        name: "Player1",
+        uuid: testUuid + '1',
+        key: "gibberish-key",
+        ready: true
+      },{
+        name: "Player2",
+        uuid: testUuid + '2',
+        key: "gibberish-key1",
+        ready: false
+      }]
+    }))
+
+    expect(screen.queryByTestId("game-launching-header")).not.toBeInTheDocument()
+    expect(mockedResetCountdown).toHaveBeenCalledTimes(1)
   })
 
   it('sets up heartbeat if user in game', async () => {
-    render(<LobbyContainer
-      players={[{
+    render(constructLobbyContainer({
+      players: [{
         name: "Player1",
         uuid: testUuid,
         key: "gibberish-key",
         ready: false
-      }]}
-      copyUrlFn={mockedCopyUrlFn}
-      gameName={testGameName}
-      gameId={testGid}
-      isHeartbeatOn={mockedIsHeartbeatOn}
-      setupHeartbeatInterval={mockedSetupHeartbeatInterval}
-      uuid={testUuid}
-    />)
+      }]
+    }))
 
     expect(mockedIsHeartbeatOn).toHaveBeenCalledTimes(1)
     expect(mockedSetupHeartbeatInterval).toHaveBeenNthCalledWith(1, testGid)
   })
 
   it('if game has already started (player has score), navigate to live game page', async () => {
-    render(<LobbyContainer
-      players={[{
+    render(constructLobbyContainer({
+      players: [{
         name: "Player1",
         uuid: testUuid + "1",
         key: "gibberish-key",
@@ -194,24 +208,16 @@ describe("Create game page slash home page", () => {
         uuid: testUuid + "2",
         key: "gibberish-key2",
         ready: true
-      }]}
-      copyUrlFn={mockedCopyUrlFn}
-      gameName={testGameName}
-      gameId={testGid}
-      isHeartbeatOn={mockedIsHeartbeatOn}
-      setupHeartbeatInterval={mockedSetupHeartbeatInterval}
-      uuid={testUuid}
-    />)
+      }]
+    }))
 
     expect(mockedNavigateMethod).toHaveBeenNthCalledWith(1, `/game/${testGid}`)
   })
 
   // TODO: Move useCountdown props to parent component and pass down, easier
-  it.skip('when countdown is 0 navigate to live game page', async () => {
-    jest.useFakeTimers()
-
-    render(<LobbyContainer
-      players={[{
+  it('when countdown is 0 navigate to live game page', async () => {
+    render(constructLobbyContainer({
+      players: [{
         name: "Player1",
         uuid: testUuid + "1",
         key: "gibberish-key",
@@ -221,18 +227,13 @@ describe("Create game page slash home page", () => {
         uuid: testUuid + "2",
         key: "gibberish-key2",
         ready: true
-      }]}
-      copyUrlFn={mockedCopyUrlFn}
-      gameName={testGameName}
-      gameId={testGid}
-      isHeartbeatOn={mockedIsHeartbeatOn}
-      setupHeartbeatInterval={mockedSetupHeartbeatInterval}
-      uuid={testUuid}
-    />)
+      }],
+      count: 0
+    }))
 
     expect(mockedNavigateMethod).toHaveBeenNthCalledWith(1, `/game/${testGid}`)
+  })
 
-    jest.useRealTimers()
   })
 })
 
