@@ -234,8 +234,76 @@ describe("Create game page slash home page", () => {
     expect(mockedNavigateMethod).toHaveBeenNthCalledWith(1, `/game/${testGid}`)
   })
 
+  it('renders message with count in text if game is launching and player is in the game', async () => {
+    render(constructLobbyContainer({
+      players: [{
+        name: "Player1",
+        uuid: testUuid,
+        key: "gibberish-key",
+        ready: true,
+        score: 1
+      },{
+        name: "Player2",
+        uuid: testUuid + "2",
+        key: "gibberish-key2",
+        ready: true
+      }]
+    }))
+
+    expect(screen.getByText("Game launching in 10 seconds...")).toBeInTheDocument()
+  })
+
+  it('renders message without count in text if game is launching and player is not in the game', async () => {
+    render(constructLobbyContainer({
+      players: [{
+        name: "Player1",
+        uuid: testUuid + "1",
+        key: "gibberish-key",
+        ready: true,
+        score: 1
+      },{
+        name: "Player2",
+        uuid: testUuid + "2",
+        key: "gibberish-key2",
+        ready: true
+      }]
+    }))
+
+    expect(screen.getByText("Game launching! Unless someone clicks ready to off, no new joiners.")).toBeInTheDocument()
+  })
+
+  it('renders a copy share link which fires passed in copy method if clicked if game isn\'t launching', () => {
+    render(constructLobbyContainer())
+
+    const button = screen.getByTestId("game-container-copy-share-link-button")
+
+    expect(button).toBeInTheDocument()
+
+    userEvent.click(button)
+
+    expect(mockedCopyUrlFn).toHaveBeenCalledTimes(1)
+  })
+
+  it('doesn\'t render copy link if game is launching', async () => {
+    render(constructLobbyContainer({
+      players: [{
+        name: "Player1",
+        uuid: testUuid + "1",
+        key: "gibberish-key",
+        ready: true,
+      },{
+        name: "Player2",
+        uuid: testUuid + "2",
+        key: "gibberish-key2",
+        ready: true
+      }]
+    }))
+
+    expect(
+      screen.queryByTestId("game-container-copy-share-link-button")
+    ).not.toBeInTheDocument()
   })
 })
 
 
-  
+
