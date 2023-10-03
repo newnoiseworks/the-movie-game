@@ -26,7 +26,7 @@ interface GameLobbyContainerProps {
 const GameLobbyContainer: React.FC<GameLobbyContainerProps> = ({
   players, copyUrlFn, gameName, gameId, isHeartbeatOn, setupHeartbeatInterval, uuid
 }) => {
-  const [count, { startCountdown, resetCountdown  }] = useCountdown({ countStart: 10 })
+  const [count, { startCountdown, resetCountdown }] = useCountdown({ countStart: 10 })
   const navigate = useNavigate()
   const { isOpen, onOpen, onClose } = useDisclosure()
 
@@ -64,7 +64,7 @@ const GameLobbyContainer: React.FC<GameLobbyContainerProps> = ({
 
   useEffect(function checkIfGameHasStartedAndBootIfSo() {
     if (players.find((p) => p.score && p.score > 0)) {
-      navigate('/game/' + gameId)
+      navigate(`/game/${gameId}`)
     }
   }, [players, navigate, gameId])
 

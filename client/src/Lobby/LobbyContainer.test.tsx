@@ -1,4 +1,4 @@
-import { render, waitFor, screen } from '@testing-library/react'
+import {  render, waitFor, screen } from '@testing-library/react'
 
 import LobbyContainer from './LobbyContainer'
 
@@ -160,5 +160,81 @@ describe("Create game page slash home page", () => {
     expect(screen.getByTestId("game-launching-header")).toBeInTheDocument()
     await waitFor(() => expect(screen.queryByTestId("join-game-modal-name-input")).not.toBeInTheDocument())
   })
+
+  it('sets up heartbeat if user in game', async () => {
+    render(<LobbyContainer
+      players={[{
+        name: "Player1",
+        uuid: testUuid,
+        key: "gibberish-key",
+        ready: false
+      }]}
+      copyUrlFn={mockedCopyUrlFn}
+      gameName={testGameName}
+      gameId={testGid}
+      isHeartbeatOn={mockedIsHeartbeatOn}
+      setupHeartbeatInterval={mockedSetupHeartbeatInterval}
+      uuid={testUuid}
+    />)
+
+    expect(mockedIsHeartbeatOn).toHaveBeenCalledTimes(1)
+    expect(mockedSetupHeartbeatInterval).toHaveBeenNthCalledWith(1, testGid)
+  })
+
+  it('if game has already started (player has score), navigate to live game page', async () => {
+    render(<LobbyContainer
+      players={[{
+        name: "Player1",
+        uuid: testUuid + "1",
+        key: "gibberish-key",
+        ready: true,
+        score: 1
+      },{
+        name: "Player2",
+        uuid: testUuid + "2",
+        key: "gibberish-key2",
+        ready: true
+      }]}
+      copyUrlFn={mockedCopyUrlFn}
+      gameName={testGameName}
+      gameId={testGid}
+      isHeartbeatOn={mockedIsHeartbeatOn}
+      setupHeartbeatInterval={mockedSetupHeartbeatInterval}
+      uuid={testUuid}
+    />)
+
+    expect(mockedNavigateMethod).toHaveBeenNthCalledWith(1, `/game/${testGid}`)
+  })
+
+  // TODO: Move useCountdown props to parent component and pass down, easier
+  it.skip('when countdown is 0 navigate to live game page', async () => {
+    jest.useFakeTimers()
+
+    render(<LobbyContainer
+      players={[{
+        name: "Player1",
+        uuid: testUuid + "1",
+        key: "gibberish-key",
+        ready: true,
+      },{
+        name: "Player2",
+        uuid: testUuid + "2",
+        key: "gibberish-key2",
+        ready: true
+      }]}
+      copyUrlFn={mockedCopyUrlFn}
+      gameName={testGameName}
+      gameId={testGid}
+      isHeartbeatOn={mockedIsHeartbeatOn}
+      setupHeartbeatInterval={mockedSetupHeartbeatInterval}
+      uuid={testUuid}
+    />)
+
+    expect(mockedNavigateMethod).toHaveBeenNthCalledWith(1, `/game/${testGid}`)
+
+    jest.useRealTimers()
+  })
 })
 
+
+  
