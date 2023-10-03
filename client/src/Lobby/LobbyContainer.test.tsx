@@ -14,11 +14,6 @@ jest.mock("react-router-dom", () => ({
   useNavigate: () => mockedNavigateMethod,
 }))
 
-jest.mock("../api", () => ({
-  ...(jest.requireActual("../api")),
-  getUID: () => jest.fn()
-}))
-
 let isHeartbeatOnVar = false
 const mockedIsHeartbeatOn = jest.fn().mockImplementation(() => {
   isHeartbeatOnVar = !isHeartbeatOnVar
@@ -30,6 +25,7 @@ const mockedResetCountdown = jest.fn()
 const mockedSetupHeartbeatInterval = jest.fn()
 const mockedCopyUrlFn = jest.fn()
 const mockedGetUID = jest.fn().mockImplementation(() => testUuid)
+const mockedSetToDB = jest.fn()
 
 function constructLobbyContainer(props: Partial<LobbyContainerProps> = {}) {
   const defaultProps = {
@@ -42,6 +38,7 @@ function constructLobbyContainer(props: Partial<LobbyContainerProps> = {}) {
     uuid: testUuid,
     startCountdown: mockedStartCountdown,
     resetCountdown: mockedResetCountdown,
+    setToDB: mockedSetToDB,
     count: 10
   }
 
@@ -59,6 +56,7 @@ describe("Create game page slash home page", () => {
     mockedGetUID.mockReset()
     mockedResetCountdown.mockReset()
     mockedStartCountdown.mockReset()
+    mockedSetToDB.mockReset()
   })
 
   it('renders without crashing', () => {

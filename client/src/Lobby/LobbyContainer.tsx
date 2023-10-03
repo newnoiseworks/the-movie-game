@@ -9,7 +9,8 @@ import {
 } from '@chakra-ui/react'
 import { useNavigate } from 'react-router-dom'
 
-import LobbyPlayerList, { LobbyPlayer } from './LobbyPlayerList'
+import LobbyPlayerList from './LobbyPlayerList'
+import { LobbyPlayer } from './LobbyPage'
 import LobbyJoinModal from './LobbyJoinModal'
 
 export interface LobbyContainerProps {
@@ -22,6 +23,7 @@ export interface LobbyContainerProps {
   count: number
   startCountdown: () => void
   resetCountdown: () => void
+  setToDB: (path: string, data: object) => Promise<void>
   gameName: string
 }
 
@@ -35,7 +37,8 @@ const LobbyContainer: React.FC<LobbyContainerProps> = ({
   uuid,
   count,
   startCountdown,
-  resetCountdown
+  resetCountdown,
+  setToDB
 }) => {
   const navigate = useNavigate()
   const { isOpen, onOpen, onClose } = useDisclosure()
@@ -131,6 +134,8 @@ const LobbyContainer: React.FC<LobbyContainerProps> = ({
         players={players}
         gameId={gameId}
         copyUrlFn={copyUrlFn}
+        uuid={uuid}
+        setToDB={setToDB}
       />
       <LobbyJoinModal
         isOpen={isOpen}

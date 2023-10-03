@@ -9,19 +9,12 @@ import {
   Tr,
   Th,
   Td,
-  // TableCaption,
   TableContainer, } from '@chakra-ui/react'
 
 import { setToDB } from '../firebase'
 import { getUID } from '../api'
 
-export interface LobbyPlayer {
-  name: string
-  ready?: boolean
-  uuid: string
-  key: string
-  score?: number
-}
+import { LobbyPlayer } from './LobbyPage'
 
 export interface LobbyPlayerListProps {
   players: LobbyPlayer[]

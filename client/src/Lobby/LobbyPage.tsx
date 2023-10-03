@@ -4,10 +4,17 @@ import { useList, useObjectVal } from 'react-firebase-hooks/database'
 import { useCopyToClipboard, useCountdown } from 'usehooks-ts'
 
 import { getUID, isHeartbeatOn, setupHeartbeatInterval } from '../api'
-import { getFromDB } from '../firebase'
+import { getFromDB, setToDB } from '../firebase'
 
-import { LobbyPlayer } from './LobbyPlayerList'
 import LobbyContainer from './LobbyContainer'
+
+export interface LobbyPlayer {
+  name: string
+  ready?: boolean
+  uuid: string
+  key: string
+  score?: number
+}
 
 const GameLobby: React.FC = () => {
   const [ , copy ] = useCopyToClipboard()
@@ -61,6 +68,7 @@ const GameLobby: React.FC = () => {
       isHeartbeatOn={isHeartbeatOn}
       setupHeartbeatInterval={setupHeartbeatInterval}
       uuid={getUID()}
+      setToDB={setToDB}
       count={count}
       startCountdown={startCountdown}
       resetCountdown={resetCountdown}
