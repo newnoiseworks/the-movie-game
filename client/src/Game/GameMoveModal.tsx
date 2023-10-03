@@ -31,7 +31,12 @@ interface GameMoveModalProps {
 }
 
 const GameMoveModal: React.FC<GameMoveModalProps> = ({
-  errorMessage, isOpen, onClose, searchType, makeChoice, lastMove
+  errorMessage,
+  isOpen,
+  onClose,
+  searchType,
+  makeChoice,
+  lastMove
 }) => {
   const [personId, setPersonId] = useState<number>(-1)
   const [movieId, setMovieId] = useState<number>(-1)

@@ -6,7 +6,7 @@ import { getFromDB } from '../firebase'
 import { getUID, playerGameChoice, isHeartbeatOn, setupHeartbeatInterval } from '../api'
 
 import GameContainer from './GameContainer'
-import {uniq} from 'underscore'
+import { uniq } from 'underscore'
 
 export interface GamePlayer {
   uuid: string

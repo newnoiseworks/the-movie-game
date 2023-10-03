@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useEffect } from 'react'
+import React, { useCallback, useMemo, useState, useEffect } from 'react'
 import {
   useDisclosure,
   Text,
@@ -11,7 +11,7 @@ import GamePlayerList, { MAX_SCORE } from './GamePlayerList'
 import GameMoveModal, {SearchType} from './GameMoveModal'
 import GameMoveJumbotron from './GameMoveJumbotron'
 
-interface GameContainerProps {
+export interface GameContainerProps {
   gameId: string,
   players: GamePlayer[]
   history: GameHistoryMove[]
@@ -19,10 +19,7 @@ interface GameContainerProps {
   currentPlayer: string
   isHeartbeatOn: () => boolean
   setupHeartbeatInterval: (gid: string) => Promise<void>
-  playerGameChoice: (
-    choice: GameMove,
-    gid: string
-  ) => Promise<any>
+  playerGameChoice: (choice: GameMove, gid: string) => Promise<any>
   uuid: string
 }
 
@@ -45,22 +42,27 @@ const GameContainer: React.FC<GameContainerProps> = ({
   const [ lastMove, setLastMove ] = useState<GameHistoryMove>()
   const [ errorMessage, setErrorMessage ] = useState<string>()
 
+  const isUserInGame = useMemo(
+    () => players && !!players.find((p) => p.uuid === uuid),
+    [uuid, players]
+  )
+
   useEffect(function setupHeartbeatIfPlayerHasnt() {
-    if (gameId && !isHeartbeatOn() && players.find((p) => p.uuid === uuid)) {
+    if (gameId && !isHeartbeatOn() && isUserInGame) {
       setupHeartbeatInterval(gameId)
     }
-  }, [players, gameId, isHeartbeatOn, setupHeartbeatInterval, uuid])
+  }, [gameId, isHeartbeatOn, setupHeartbeatInterval, isUserInGame])
 
   useEffect(function setupCurrentPlayerNameFromPlayers() {
-    if (currentPlayer && players && players.length > 0) {
+    if (currentPlayer && isUserInGame) {
       const player = players.find((p) => p.uuid === currentPlayer)
       if (player && currentPlayerName !== player.name) {
         setCurrentPlayerName(player.name)
       }
     }
-  }, [players, currentPlayer, currentPlayerName])
+  }, [players, currentPlayer, currentPlayerName, isUserInGame])
 
-  useEffect(function setupGameMoveModalOnCurrentPlayerChanges() {
+  useEffect(function setsSearchTypeBasedOnLastMove() {
     if (history) {
       if (history.length === 0) {
         setSearchType(SearchType.both)
