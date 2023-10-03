@@ -14,12 +14,7 @@ jest.mock("react-router-dom", () => ({
   useNavigate: () => mockedNavigateMethod,
 }))
 
-let isHeartbeatOnVar = false
-const mockedIsHeartbeatOn = jest.fn().mockImplementation(() => {
-  isHeartbeatOnVar = !isHeartbeatOnVar
-  return isHeartbeatOnVar
-})
-
+const mockedIsHeartbeatOn = jest.fn()
 const mockedStartCountdown = jest.fn()
 const mockedResetCountdown = jest.fn()
 const mockedSetupHeartbeatInterval = jest.fn()
@@ -48,7 +43,6 @@ function constructLobbyContainer(props: Partial<LobbyContainerProps> = {}) {
 describe("Create game page slash home page", () => {
 
   beforeEach(() => {
-    isHeartbeatOnVar = false
     mockedNavigateMethod.mockReset()
     mockedCopyUrlFn.mockReset()
     mockedIsHeartbeatOn.mockReset()
