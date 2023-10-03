@@ -15,11 +15,10 @@ jest.mock("react-router-dom", () => ({
 }))
 
 const mockedIsHeartbeatOn = jest.fn()
+const mockedSetupHeartbeatInterval = jest.fn()
 const mockedStartCountdown = jest.fn()
 const mockedResetCountdown = jest.fn()
-const mockedSetupHeartbeatInterval = jest.fn()
 const mockedCopyUrlFn = jest.fn()
-const mockedGetUID = jest.fn().mockImplementation(() => testUuid)
 const mockedSetToDB = jest.fn()
 const mockedJoinGame = jest.fn()
 
@@ -49,7 +48,6 @@ describe("Create game page slash home page", () => {
     mockedCopyUrlFn.mockReset()
     mockedIsHeartbeatOn.mockReset()
     mockedSetupHeartbeatInterval.mockReset()
-    mockedGetUID.mockReset()
     mockedResetCountdown.mockReset()
     mockedStartCountdown.mockReset()
     mockedSetToDB.mockReset()
