@@ -23,7 +23,7 @@ export interface LobbyContainerProps {
   count: number
   startCountdown: () => void
   resetCountdown: () => void
-  setToDB: (path: string, data: object) => Promise<void>
+  setToDB: (path: string, data: any) => Promise<void>
   gameName: string
 }
 

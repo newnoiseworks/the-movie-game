@@ -11,23 +11,14 @@ import {
   Td,
   TableContainer, } from '@chakra-ui/react'
 
-import { setToDB } from '../firebase'
-import { getUID } from '../api'
-
 import { LobbyPlayer } from './LobbyPage'
 
-export interface LobbyPlayerListProps {
-  players: LobbyPlayer[]
-  gameId: string
-  copyUrlFn: () => void
+interface PlayerRowProps {
+  player: LobbyPlayer
 }
 
-const PlayerRow: React.FC<{ player: LobbyPlayer, gameId: string }> = ({ player, gameId }) => {
-  if (player.uuid === getUID()) {
-    return <UserPlayerRow player={player} gameId={gameId} />
-  }
-
-  return <Tr key={player.key}>
+const PlayerRow: React.FC<PlayerRowProps> = ({ player }) => {
+  return <Tr key={player.key} data-testid={`player-row-${player.key}`}>
     <Td>
       {player.name}
     </Td>
@@ -37,30 +28,52 @@ const PlayerRow: React.FC<{ player: LobbyPlayer, gameId: string }> = ({ player, 
   </Tr>
 }
 
-const UserPlayerRow: React.FC<{ player: LobbyPlayer, gameId: string }> = ({ player, gameId }) => (
-  <Tr key={player.key}>
-    <Td>
+interface UserPlayerRowProps extends PlayerRowProps {
+  gameId: string
+  setToDB: (path: string, data: any) => Promise<void>
+}
+
+const UserPlayerRow: React.FC<UserPlayerRowProps> = ({ 
+  player,
+  gameId,
+  setToDB
+}) => (
+  <Tr key={player.key} data-testid={`user-row-${player.key}`}>
+    <Td data-testid="lobby-player-list-user-nametag">
       {player.name} - <em>(you)</em>
     </Td>
     <Td textAlign="right">
-      <Switch isChecked={player.ready} onChange={() => {
-        setToDB(`games/${gameId}/players/${player.key}/ready`, !player.ready)
-      }} />
+      <Switch 
+        data-testid="lobby-player-list-user-ready-switch"
+        isChecked={player.ready} 
+        onChange={() => {
+          setToDB(`games/${gameId}/players/${player.key}/ready`, !player.ready)
+        }}
+      />
     </Td>
   </Tr>
 )
 
+export interface LobbyPlayerListProps {
+  players: LobbyPlayer[]
+  gameId: string
+  copyUrlFn: () => void
+  uuid: string
+  setToDB: (path: string, data: any) => Promise<void>
+}
+
 const LobbyPlayerList: React.FC<LobbyPlayerListProps> = ({
   players = [],
   gameId,
-  copyUrlFn
+  copyUrlFn,
+  uuid,
+  setToDB
 }) => {
-  const notUserPlayers = players.filter((p) => p.uuid !== getUID())
-  const userPlayer = players.find((p) => p.uuid === getUID())
+  const notUserPlayers = players.filter((p) => p.uuid !== uuid)
+  const userPlayer = players.find((p) => p.uuid === uuid)
 
   return <TableContainer>
     <Table variant="striped" colorScheme="purple">
-      {/*<TableCaption>caption</TableCaption>*/}
       <Thead>
         <Tr>
           <Th>Players</Th>
@@ -72,19 +85,19 @@ const LobbyPlayerList: React.FC<LobbyPlayerListProps> = ({
           player={userPlayer}
           key={userPlayer.key}
           gameId={gameId}
+          setToDB={setToDB}
         />}
         {notUserPlayers.map((player) => (
           <PlayerRow
             player={player}
             key={player.key}
-            gameId={gameId}
           />
         ))}
       </Tbody>
       <Tfoot>
         <Tr>
           <Td>
-            <Link onClick={copyUrlFn}>(copy share link)</Link>
+            <Link data-testid="lobby-player-list-copy-share-link" onClick={copyUrlFn}>(copy share link)</Link>
           </Td>
           <Td></Td>
         </Tr>
