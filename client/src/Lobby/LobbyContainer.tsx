@@ -24,6 +24,7 @@ export interface LobbyContainerProps {
   startCountdown: () => void
   resetCountdown: () => void
   setToDB: (path: string, data: any) => Promise<void>
+  joinGame: (name: string, gid: string) => Promise<void>
   gameName: string
 }
 
@@ -38,6 +39,7 @@ const LobbyContainer: React.FC<LobbyContainerProps> = ({
   count,
   startCountdown,
   resetCountdown,
+  joinGame,
   setToDB
 }) => {
   const navigate = useNavigate()
@@ -141,6 +143,7 @@ const LobbyContainer: React.FC<LobbyContainerProps> = ({
         isOpen={isOpen}
         onClose={onClose}
         gameId={gameId}
+        joinGame={joinGame}
       />
     </Container>
   )

@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useCallback, useState } from 'react'
 import {
   Button,
   Input,
@@ -12,16 +12,15 @@ import {
   VStack,
 } from '@chakra-ui/react'
 
-import { joinGame } from '../api'
-
-interface LobbyJoinModalProps {
+export interface LobbyJoinModalProps {
   isOpen: boolean
   onClose: () => void
   gameId: string
+  joinGame: (name: string, gid: string) => Promise<void>
 }
 
 const LobbyJoinModal: React.FC<LobbyJoinModalProps> = ({
-  isOpen, onClose, gameId
+  isOpen, onClose, gameId, joinGame
 }) => {
   const [ playerName, setPlayerName ] = useState<string>('')
   const [ playerNameInvalid, setPlayerNameInvalid ] = useState<boolean>(false)
@@ -31,6 +30,16 @@ const LobbyJoinModal: React.FC<LobbyJoinModalProps> = ({
     setPlayerNameInvalid(!value || value.length < 3)
   }
 
+  const submitJoinGame = useCallback(async () => {
+    if (!playerName || playerName.length < 3) {
+      setPlayerNameInvalid(true)
+    } else {
+      setPlayerNameInvalid(false)
+      await joinGame(playerName, gameId)
+      onClose()
+    }
+  }, [playerName, joinGame, onClose, gameId])
+
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />
@@ -39,24 +48,17 @@ const LobbyJoinModal: React.FC<LobbyJoinModalProps> = ({
         <ModalBody>
           <VStack alignItems="flex-start">
             <Input
+              data-testid="join-game-modal-name-input"
               placeholder="Enter Your Name*"
               isInvalid={playerNameInvalid}
               value={playerName}
               onChange={(e) => onPlayerNameChange(e.target.value)}
-              data-testid="join-game-modal-name-input"
             />
             {playerNameInvalid && <Text as="p" fontSize="x-small">Name of 3 characters or more required</Text>}
           </VStack>
         </ModalBody>
         <ModalFooter>
-          <Button onClick={async () => {
-            setPlayerNameInvalid(!playerName || playerName.length < 3)
-
-            if (!playerNameInvalid) {
-              await joinGame(playerName, gameId)
-              onClose()
-            }
-          }}>
+          <Button data-testid="join-game-modal-submit-button" onClick={() => submitJoinGame()}>
             Join Game
           </Button>
         </ModalFooter>

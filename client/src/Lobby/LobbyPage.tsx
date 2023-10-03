@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useList, useObjectVal } from 'react-firebase-hooks/database'
 import { useCopyToClipboard, useCountdown } from 'usehooks-ts'
 
-import { getUID, isHeartbeatOn, setupHeartbeatInterval } from '../api'
+import { getUID, isHeartbeatOn, setupHeartbeatInterval, joinGame } from '../api'
 import { getFromDB, setToDB } from '../firebase'
 
 import LobbyContainer from './LobbyContainer'
@@ -72,6 +72,7 @@ const GameLobby: React.FC = () => {
       count={count}
       startCountdown={startCountdown}
       resetCountdown={resetCountdown}
+      joinGame={joinGame}
     />
   )
 }

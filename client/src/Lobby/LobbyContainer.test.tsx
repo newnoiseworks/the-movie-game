@@ -21,6 +21,7 @@ const mockedSetupHeartbeatInterval = jest.fn()
 const mockedCopyUrlFn = jest.fn()
 const mockedGetUID = jest.fn().mockImplementation(() => testUuid)
 const mockedSetToDB = jest.fn()
+const mockedJoinGame = jest.fn()
 
 function constructLobbyContainer(props: Partial<LobbyContainerProps> = {}) {
   const defaultProps = {
@@ -33,6 +34,7 @@ function constructLobbyContainer(props: Partial<LobbyContainerProps> = {}) {
     uuid: testUuid,
     startCountdown: mockedStartCountdown,
     resetCountdown: mockedResetCountdown,
+    joinGame: mockedJoinGame,
     setToDB: mockedSetToDB,
     count: 10
   }
