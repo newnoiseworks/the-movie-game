@@ -107,6 +107,7 @@ const GameMoveJumbotron: React.FC<GameMoveJumbotronProps> = (({
         offsetY={-20}
       >
         <Box
+          data-testid="game-move-jumbotron-last-move-box"
           bg={lastMoveMaxScoreHit ? "red.500" : "purple.500"}
           rounded="md"
           shadow="md"
@@ -120,17 +121,18 @@ const GameMoveJumbotron: React.FC<GameMoveJumbotronProps> = (({
           <Text data-testid="game-jumbotron-last-move-string">{lastMoveString}</Text>
           <Text data-testid="game-jumbotron-last-move-score-string">{lastMoveScoreString}</Text>
           {lastMoveMaxScoreHit && lastMove &&
-            <Text>{lastMove.player.name} is knocked out of the game!</Text>
+            <Text data-testid="game-jumbotron-last-move-knocked-out-message">{lastMove.player.name} is knocked out of the game!</Text>
           }
         </Box>
       </SlideFade>
       {
-        isFinalWinnerAlertOpen && finalWinner &&
+        finalWinner &&
         <SlideFade
-          in={!!finalWinner}
+          in={!!isFinalWinnerAlertOpen}
           offsetY={-20}
         >
           <Box
+            data-testid="game-jumbotron-final-winner-box"
             bg="green.500"
             rounded="md"
             shadow="md"

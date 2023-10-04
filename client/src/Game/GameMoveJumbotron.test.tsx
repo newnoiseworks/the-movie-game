@@ -1,4 +1,5 @@
 import { render, screen, waitFor } from "@testing-library/react"
+import {act} from "react-dom/test-utils"
 
 import GameMoveJumbotron, { GameMoveJumbotronProps } from "./GameMoveJumbotron"
 import { GamePlayer } from "./GamePage"
@@ -12,6 +13,12 @@ const testPlayer: GamePlayer = {
   uuid: testUuid,
   name: testUserPlayerName,
   key: "akey"
+}
+
+const testPlayer2: GamePlayer = {
+  uuid: testUuid + "2",
+  name: testUserPlayerName + "2",
+  key: "akey2"
 }
 
 function constructGameMoveJumbotron(props: Partial<GameMoveJumbotronProps> = {}) {
@@ -133,14 +140,68 @@ describe("Game Move Jumbotron component", () => {
         }
       }))
 
-      await waitFor(() => {
-        expect(screen.getByTestId("game-jumbotron-last-move-score-string")).toHaveTextContent("M****")
-      })
+      expect(screen.queryByTestId("game-jumbotron-last-move-knocked-out-message")).not.toBeInTheDocument()
+      expect(screen.getByTestId("game-jumbotron-last-move-score-string")).toHaveTextContent("M****")
     })
 
-    it.todo("if max score is hit, bg of move modal renders as red, messaging writes player as knocked out")
+    it("if max score is hit messaging writes player as knocked out", async () => {
+      render(constructGameMoveJumbotron({
+        lastMove: {
+          name: "A movie",
+          photo: "url",
+          toType: "mid",
+          key: "akey",
+          player: { ...testPlayer, score: 5 },
+          correct: false,
+        }
+      }))
 
-    it.todo("if final winner passed in, displays green final winner modal after 2500ms (try using jest fake timers thing)")
+      expect(screen.getByTestId("game-jumbotron-last-move-knocked-out-message")).toBeInTheDocument()
+    })
+
+    it("if no final winner passed in, does not renders final winner modal", () => {
+      render(constructGameMoveJumbotron({
+        lastMove: {
+          name: "A movie",
+          photo: "url",
+          toType: "mid",
+          key: "akey",
+          player: { ...testPlayer, score: 5 },
+          correct: false,
+        }
+      }))
+
+      expect(screen.queryByTestId("game-jumbotron-final-winner-box")).not.toBeInTheDocument()
+    })
+
+    it("if final winner passed in, renders final winner modal, displays after 5 seconds", async () => {
+      jest.useFakeTimers()
+
+      render(constructGameMoveJumbotron({
+        lastMove: {
+          name: "A movie",
+          photo: "url",
+          toType: "mid",
+          key: "akey",
+          player: { ...testPlayer2, score: 5 },
+          correct: false,
+        },
+        finalWinner: testPlayer
+      }))
+
+      expect(screen.getByTestId("game-jumbotron-final-winner-box")).toBeInTheDocument()
+      expect(screen.getByTestId("game-jumbotron-final-winner-box")).not.toBeVisible()
+
+      act(() => {
+        jest.advanceTimersByTime(5010)
+      })
+
+      await waitFor(() => {
+        expect(screen.getByTestId("game-jumbotron-final-winner-box")).toBeVisible()
+      })
+
+      jest.useRealTimers()
+    })
   })
 
   describe("Current Move Display", () => {
