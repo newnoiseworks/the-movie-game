@@ -8,7 +8,6 @@ const testUuid = "test-uuid"
 const testUserPlayerName = "test-user-player"
 
 const mockedIsHeartbeatOn = jest.fn()
-
 const mockedSetupHeartbeatInterval = jest.fn()
 const mockedPlayerGameChoice = jest.fn()
 
@@ -32,6 +31,8 @@ function constructGameContainer(props: Partial<GameContainerProps> = {}) {
     currentPlayer: testUuid,
     isHeartbeatOn: mockedIsHeartbeatOn,
     setupHeartbeatInterval: mockedSetupHeartbeatInterval,
+    searchForPeople: jest.fn(),
+    searchForMovie: jest.fn(),
     playerGameChoice: mockedPlayerGameChoice
   }
 

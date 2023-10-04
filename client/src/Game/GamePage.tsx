@@ -3,7 +3,14 @@ import { useParams } from 'react-router-dom'
 import { useList, useObjectVal } from 'react-firebase-hooks/database'
 
 import { getFromDB } from '../firebase'
-import { getUID, playerGameChoice, isHeartbeatOn, setupHeartbeatInterval } from '../api'
+import {
+  getUID,
+  isHeartbeatOn,
+  playerGameChoice,
+  searchForPeople,
+  searchForMovie,
+  setupHeartbeatInterval
+} from '../api'
 
 import GameContainer from './GameContainer'
 import { uniq } from 'underscore'
@@ -86,6 +93,8 @@ const GamePage: React.FC = () => {
       playerGameChoice={playerGameChoice}
       isHeartbeatOn={isHeartbeatOn}
       setupHeartbeatInterval={setupHeartbeatInterval}
+      searchForMovie={searchForMovie}
+      searchForPeople={searchForPeople}
       uuid={getUID()}
     />
   )

@@ -20,6 +20,8 @@ export interface GameContainerProps {
   isHeartbeatOn: () => boolean
   setupHeartbeatInterval: (gid: string) => Promise<void>
   playerGameChoice: (choice: GameMove, gid: string) => Promise<any>
+  searchForPeople: (person: string) => Promise<any>
+  searchForMovie: (movie: string) => Promise<any>
   uuid: string
 }
 
@@ -32,6 +34,8 @@ const GameContainer: React.FC<GameContainerProps> = ({
   isHeartbeatOn,
   setupHeartbeatInterval,
   playerGameChoice,
+  searchForPeople,
+  searchForMovie,
   uuid
 }) => {
   const { isOpen: isMoveModalOpen, onOpen: onMoveModalOpen, onClose: onMoveModalClose } = useDisclosure()
@@ -156,6 +160,8 @@ const GameContainer: React.FC<GameContainerProps> = ({
           isOpen={isMoveModalOpen}
           onClose={onMoveModalClose}
           errorMessage={errorMessage}
+          searchForMovie={searchForMovie}
+          searchForPeople={searchForPeople}
         />
       </Box>
       {history && history.length > 0 &&
