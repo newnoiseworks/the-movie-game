@@ -94,7 +94,11 @@ describe("Game Container page implementation w/ child components", () => {
     expect(screen.getByText(`${testUserPlayerName}'s move`)).toBeInTheDocument()
   })
 
-  it.todo('sets the search type to both at the start')
+  it('sets the search type to both at the start', () => {
+    render(constructGameContainer())
+
+    expect(screen.getByText(`${testUserPlayerName} has to choose a movie or person to start!`)).toBeInTheDocument()
+  })
 
   it.todo('sets the search type for next move based on last move')
 
