@@ -12,7 +12,7 @@ import {
 import { GameHistoryMove, GamePlayer } from './GamePage'
 import { getScoreString, MAX_SCORE } from './GamePlayerList'
 
-interface GameMoveJumbotronProps {
+export interface GameMoveJumbotronProps {
   playerName: string
   lastMove?: GameHistoryMove
   finalWinner?: GamePlayer
@@ -117,8 +117,8 @@ const GameMoveJumbotron: React.FC<GameMoveJumbotronProps> = (({
             width: '100%',
           }}
         >
-          <Text>{lastMoveString}</Text>
-          <Text>{lastMoveScoreString}</Text>
+          <Text data-testid="game-jumbotron-last-move-string">{lastMoveString}</Text>
+          <Text data-testid="game-jumbotron-last-move-score-string">{lastMoveScoreString}</Text>
           {lastMoveMaxScoreHit && lastMove &&
             <Text>{lastMove.player.name} is knocked out of the game!</Text>
           }
