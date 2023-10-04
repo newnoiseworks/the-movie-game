@@ -8,6 +8,7 @@ import { GamePlayer } from "./GamePage"
 // const testGid = "test-gid"
 const testUuid = "test-uuid"
 const testUserPlayerName = "test-user-player"
+const testUserPlayerName2 = "test-user-player2"
 
 const testPlayer: GamePlayer = {
   uuid: testUuid,
@@ -17,7 +18,7 @@ const testPlayer: GamePlayer = {
 
 const testPlayer2: GamePlayer = {
   uuid: testUuid + "2",
-  name: testUserPlayerName + "2",
+  name: testUserPlayerName2,
   key: "akey2"
 }
 
@@ -205,14 +206,86 @@ describe("Game Move Jumbotron component", () => {
   })
 
   describe("Current Move Display", () => {
-    it.todo("if this is the first move, display appropriate text")
+    it("if this is the first move, display appropriate text", () => {
+      render(constructGameMoveJumbotron())
 
-    it.todo("if the last move was correct and a movie, show text that next choice is a person from that movie")
+      const text = screen.getByTestId("game-jumbotron-current-move-string")
+      const currentPlayerNameText = screen.getByTestId("game-jumbotron-current-player-name")
 
-    it.todo("if the last move was correct and a person, display appropriate text showing that the next choice is another movie with that person")
+      expect(text.textContent).toBe(testUserPlayerName + " has to choose a movie or person to start!")
+      expect(currentPlayerNameText.textContent).toBe(testUserPlayerName + "'s move")
+    })
 
-    it.todo("if the last move was incorrect and a movie, show text that next choice is any movie")
+    it("if the last move was correct and a movie, show text that next choice is a person from that movie", () => {
+      render(constructGameMoveJumbotron({
+        lastMove: {
+          name: "A movie",
+          photo: "url",
+          toType: "mid",
+          key: "akey",
+          player: testPlayer,
+          correct: true
+        },
+        playerName: testUserPlayerName2
+      }))
 
-    it.todo("if the last move was incorrect and a person, show text that the next choice is any person")
+      const text = screen.getByTestId("game-jumbotron-current-move-string")
+
+      expect(text.textContent).toBe(testUserPlayerName2 + " has to choose a person from the movie A movie")
+    })
+
+    it("if the last move was correct and a person, display appropriate text showing that the next choice is another movie with that person", () => {
+      render(constructGameMoveJumbotron({
+        lastMove: {
+          name: "A person",
+          photo: "url",
+          toType: "pid",
+          key: "akey",
+          player: testPlayer,
+          correct: true
+        },
+        playerName: testUserPlayerName2
+      }))
+
+      const text = screen.getByTestId("game-jumbotron-current-move-string")
+
+      expect(text.textContent).toBe(testUserPlayerName2 + " has to choose a movie containing A person")
+    })
+
+    it("if the last move was incorrect and a movie, show text that next choice is any movie", () => {
+      render(constructGameMoveJumbotron({
+        lastMove: {
+          name: "A movie",
+          photo: "url",
+          toType: "mid",
+          key: "akey",
+          player: testPlayer,
+          correct: false
+        },
+        playerName: testUserPlayerName2
+      }))
+
+      const text = screen.getByTestId("game-jumbotron-current-move-string")
+
+      expect(text.textContent).toBe(testUserPlayerName2 + " has to choose a movie - any movie!")
+    })
+
+    it("if the last move was incorrect and a person, show text that the next choice is any person", () => {
+      render(constructGameMoveJumbotron({
+        lastMove: {
+          name: "A person",
+          photo: "url",
+          toType: "pid",
+          key: "akey",
+          player: testPlayer,
+          correct: false
+        },
+        playerName: testUserPlayerName2
+      }))
+
+      const text = screen.getByTestId("game-jumbotron-current-move-string")
+
+      expect(text.textContent).toBe(testUserPlayerName2 + " has to choose a person from a movie!")
+    })
   })
 })

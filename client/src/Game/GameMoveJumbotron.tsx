@@ -95,10 +95,10 @@ const GameMoveJumbotron: React.FC<GameMoveJumbotronProps> = (({
   return <Card sx={{ mt: 6, mb: 4 }}>
     <CardBody>
       <VStack>
-        <Heading size="md">
+        <Heading size="md" data-testid="game-jumbotron-current-player-name">
           {`${playerName}'s move`}
         </Heading>
-        <Text>
+        <Text data-testid="game-jumbotron-current-move-string">
           {currentMoveString}
         </Text>
       </VStack>
