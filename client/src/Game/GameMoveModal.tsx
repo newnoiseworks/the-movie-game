@@ -42,7 +42,7 @@ const GameMoveModal: React.FC<GameMoveModalProps> = ({
   lastMove
 }) => {
   const [personId, setPersonId] = useState<number>(-1)
-  const [movieId, setMovieId] = useState<number>(-1)
+  const [movieId, setMovieId] = useState<number>(-2) // negative 2 for testing purposes
   const [choice, setChoice] = useState<SearchType>(searchType)
 
   const personInput = useRef<GameSearchInputRef>(null)
@@ -110,6 +110,7 @@ const GameMoveModal: React.FC<GameMoveModalProps> = ({
               ) &&
               <GameSearchInput
                 ref={personInput}
+                data-testid="game-move-modal-search-input-person"
                 setIdFn={setPersonFromInput}
                 searchFn={searchForPeople}
                 placeholder="Search for person"
@@ -123,6 +124,7 @@ const GameMoveModal: React.FC<GameMoveModalProps> = ({
               ) &&
               <GameSearchInput
                 ref={movieInput}
+                data-testid="game-move-modal-search-input-movie"
                 setIdFn={setMovieFromInput}
                 searchFn={searchForMovie}
                 placeholder="Search for movie"
@@ -132,10 +134,13 @@ const GameMoveModal: React.FC<GameMoveModalProps> = ({
           </VStack>
         </ModalBody>
         <ModalFooter>
-          <Button onClick={() => makeChoice(
-            choice === SearchType.person ? personId : movieId, 
-            choice
-          )}>
+          <Button
+            data-testid="game-move-modal-move-submit-button"
+            onClick={() => makeChoice(
+              choice === SearchType.person ? personId : movieId,
+              choice
+            )}
+          >
             Choose
           </Button>
         </ModalFooter>

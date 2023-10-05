@@ -29,13 +29,19 @@ interface GameSearchInputProps {
   setIdFn: (id: number) => void
   placeholder: string
   errorMessage?: string
+  "data-testid"?: string
 }
 
 const GameSearchInput: React.ForwardRefRenderFunction<
   GameSearchInputRef, GameSearchInputProps
 > = ({
-  placeholder, searchFn, setIdFn, errorMessage
+  placeholder,
+  searchFn,
+  setIdFn,
+  errorMessage,
+  ...props
 }, ref) => {
+
   const [searchResults, setSearchResults] = useState<SearchResult[]>([])
   const [isLoading, setLoading] = useState<boolean>(false)
   const [currentError, setCurrentError] = useState<string>()
@@ -107,33 +113,31 @@ const GameSearchInput: React.ForwardRefRenderFunction<
           </FormErrorMessage>}
         </FormControl>
       </PopoverTrigger>
-      <PopoverContent>
+      <PopoverContent data-testid={props["data-testid"]}>
         <PopoverBody>
-        {searchResults.map((result) => {
-          return (
-            <HStack
-              key={result.id}
-              onClick={() => {
-                if (inputRef.current) {
-                  inputRef.current.value = result.name
-                }
-
-                setSearchResults([])
-                setIdFn(result.id)
-              }}
-            >
-              {
-                result.photo &&
-                <img
-                  src={`https://image.tmdb.org/t/p/w500/${result.photo}`}
-                  width={50}
-                  alt={result.name}
-                />
+        {searchResults.map((result) => (
+          <HStack
+            key={result.id}
+            onClick={() => {
+              if (inputRef.current) {
+                inputRef.current.value = result.name
               }
-              <Text>{result.name}</Text>
-            </HStack>
-          )
-        })}
+
+              setSearchResults([])
+              setIdFn(result.id)
+            }}
+          >
+            {
+              result.photo &&
+              <img
+                src={`https://image.tmdb.org/t/p/w500/${result.photo}`}
+                width={50}
+                alt={result.name}
+              />
+            }
+            <Text>{result.name}</Text>
+          </HStack>
+        ))}
         </PopoverBody>
       </PopoverContent>
     </Popover>
