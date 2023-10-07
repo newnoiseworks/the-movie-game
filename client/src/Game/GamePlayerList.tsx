@@ -10,7 +10,7 @@ import {
 
 import { GamePlayer } from './GamePage'
 
-interface GamePlayerListProps {
+export interface GamePlayerListProps {
   players: GamePlayer[]
   currentPlayer: string
 }
@@ -40,14 +40,14 @@ const PlayerRow: React.FC<{ player: GamePlayer, currentPlayer: string }> = ({ pl
   const score = player.score || 0
   const lost = score >= MAX_SCORE
 
-  return <Tr key={player.key}>
+  return <Tr key={player.key} data-testid={`game-player-list-row-${player.key}`}>
     <Td>
       <em style={{ textDecoration: lost ? "line-through" : '' }}>{player.name}</em>
       {lost && ' is out!'}
       {!lost && currentPlayer === player.uuid && ' waiting for move'}
       {new Date().getTime() - (player.heartbeat || 0) > 11000 && ' gone idle...'}
     </Td>
-    <Td textAlign="right">
+    <Td textAlign="right" data-testid={`game-player-list-score-${player.key}`}>
       {getScoreString(player)}
     </Td>
   </Tr>
