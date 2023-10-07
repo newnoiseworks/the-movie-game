@@ -14,10 +14,12 @@ import {
   Text
 } from '@chakra-ui/react'
 
-interface SearchResult {
+export interface SearchResult {
   id: number
   name: string
-  photo: string
+  photo?: string
+  profile_path?: string
+  poster_path?: string
 }
 
 export interface GameSearchInputRef {
@@ -101,6 +103,9 @@ const GameSearchInput: React.ForwardRefRenderFunction<
               autoComplete="off"
               ref={inputRef}
               onChange={(e) => autoCompleteOnChange(e.target.value)}
+              data-testid="game-search-input-input"
+              name="game-search-input-input"
+              role="input"
             />
             {isLoading &&
               <InputRightElement>
@@ -108,7 +113,7 @@ const GameSearchInput: React.ForwardRefRenderFunction<
               </InputRightElement>
             }
           </InputGroup>
-          {currentError && <FormErrorMessage>
+          {currentError && <FormErrorMessage data-testid="game-search-input-error">
             {currentError}
           </FormErrorMessage>}
         </FormControl>
@@ -118,6 +123,7 @@ const GameSearchInput: React.ForwardRefRenderFunction<
         {searchResults.map((result) => (
           <HStack
             key={result.id}
+            data-testid={`game-search-input-result-${result.id}`}
             onClick={() => {
               if (inputRef.current) {
                 inputRef.current.value = result.name
