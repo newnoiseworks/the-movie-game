@@ -24,7 +24,7 @@ export interface GameSearchInputRef {
   clearInput: () => void
 }
 
-interface GameSearchInputProps {
+export interface GameSearchInputProps {
   searchFn: (s: string) => Promise<{ results: SearchResult[] }>
   setIdFn: (id: number) => void
   placeholder: string
