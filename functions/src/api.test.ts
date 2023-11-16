@@ -145,7 +145,7 @@ describe("/personSearch", () => {
     expect(response.data).toBeTruthy()
     expect(response.data.page).toEqual(1)
     expect(response.data.results.length).toEqual(1)
-    expect(response.data.results[0].name).toBe('Michael Goorjian')
+    expect(response.data.results[0].name).toBe('Michael A. Goorjian')
   })
 
   test("can find multiple artful liars based on last name", async () => {
